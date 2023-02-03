@@ -171,6 +171,7 @@ public class ConstructModel extends PrismComponent
 		ModelSimple modelSimple = null;
 		DTMCSimple dtmc = null;
 		CTMCSimple ctmc = null;
+		EMDPSimple emdp = null;
 		MDPSimple mdp = null;
 		POMDPSimple pomdp = null;
 		CTMDPSimple ctmdp = null;
@@ -235,7 +236,10 @@ public class ConstructModel extends PrismComponent
 			case CSG:
 				modelSimple = csg = new CSGSimple();
 				csg.setActions(modelGen.getActions());
-				break;			
+				break;
+			case EMDP:
+				modelSimple = emdp = new EMDPSimple();
+				break;
 			case MDP:
 				modelSimple = mdp = new MDPSimple();
 				break;
@@ -337,6 +341,8 @@ public class ConstructModel extends PrismComponent
 						case CTMC:
 							ctmc.addToProbability(src, dest, modelGen.getTransitionProbability(i, j));
 							break;
+						case EMDP:
+							// TODO add transition
 						case MDP:
 						case POMDP:
 						case CTMDP:
@@ -458,6 +464,9 @@ public class ConstructModel extends PrismComponent
 				break;
 			case CTMC:
 				model = sortStates ? new CTMCSimple(ctmc, permut) : (CTMCSimple) ctmc;
+				break;
+			case EMDP:
+				model = sortStates ? new EMDPSimple(emdp, permut) : emdp;
 				break;
 			case MDP:
 				if (buildSparse) {

@@ -108,6 +108,13 @@ public enum ModelType
 			return false;
 		}
 	},
+	EMDP("Energy Markov decision process") {
+		@Override
+		public boolean multiplePlayers()
+		{
+			return true;
+		}
+	},
 	LTS("labelled transition system") {
 		@Override
 		public boolean isProbabilistic()

@@ -500,6 +500,7 @@ TOKEN :
 |	< STOCHASTIC:		"stochastic" >
 |	< STPG:				"stpg" >
 |	< SMG:				"smg" >
+|   < EMDP:             "emdp" > // "energy MDP"
 |	< SYSTEM:			"system" >
 |	< TPTG:				"tptg" >
 |	< TRUE:				"true" >
