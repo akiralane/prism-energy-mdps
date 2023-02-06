@@ -447,6 +447,8 @@ TOKEN :
 |	< ENDPLAYER:		"endplayer" >
 |	< ENDREWARDS:		"endrewards" >
 |	< ENDSYSTEM:		"endsystem" >
+|   < ENVIRONMENT:      "environment" >
+|   < ENDENVIRONMENT:   "endenvironment" >
 |	< FALSE:			"false" >
 |	< FORMULA:			"formula" >
 |	< FILTER:			"filter" >
@@ -575,6 +577,7 @@ ModulesFile ModulesFile() throws PrismLangException :
 	int initCount = 0;
 	Expression initDupe = null;
 	Player player = null;
+    Player environment = null;
 	ModulesFile mf = new ModulesFile();
 	Token begin = null;
 }
@@ -600,7 +603,9 @@ ModulesFile ModulesFile() throws PrismLangException :
 	// System definition ("system...endsystem" construct)
 	SystemEndsystem(mf) |
 	// Player definition
-	player = Player() { mf.addPlayer(player); }
+	player = Player() { mf.addPlayer(player); } |
+	// Environment definition
+	environment = Environment() { mf.setEnvironment(environment); }
 	)* <EOF>
 	{
 		// Check for multiple instances of some items
@@ -726,6 +731,7 @@ ModelType ModulesFileType() :
 	| <SMG> { modelType=ModelType.SMG; }
 	| <TPTG> { modelType=ModelType.TPTG; }
 	| <CSG> { modelType=ModelType.CSG; }
+	| <EMDP> { modelType=ModelType.EMDP; }
 	)
 	{ return modelType; }
 }
@@ -1200,6 +1206,22 @@ Player Player() :
 	{ player.setPosition(begin, getToken(0)); return player; }
 }
 
+// Environment definition
+
+Player Environment() :
+{
+	String name = null;
+	Player player = null;
+	Token begin;
+}
+{
+	{ begin = getToken(1); }
+	<ENVIRONMENT> name = Identifier() { player = new Player(name); }
+	( PlayerItem(player) ( <COMMA> PlayerItem(player) )* )? // should probably be changed to +
+	<ENDENVIRONMENT>
+	{ player.setPosition(begin, getToken(0)); return player; }
+}
+
 // Player definition item (module or [action])
 
 void PlayerItem(Player player) :
@@ -1210,7 +1232,6 @@ void PlayerItem(Player player) :
 	( <LBRACKET> name = Identifier() <RBRACKET> { player.addAction(name); } )
 	| ( name = Identifier() { player.addModule(name); } )
 }
-
 
 //-----------------------------------------------------------------------------------
 // Expressions.

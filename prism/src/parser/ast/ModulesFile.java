@@ -72,6 +72,7 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 	private List<Observable> observableDefns; // Standalone observable definitions
 	private List<Player> players; // Player definitions
 	private List<String> playerNames; // Player names
+	private Player environment;
 
 	// Info about all identifiers used
 	private IdentUsage identUsage;
@@ -321,6 +322,11 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 	{
 		players.add(index, p);
 		playerNames.add(index, p.getName());
+	}
+
+	public void setEnvironment(Player p)
+	{
+		environment = p;
 	}
 
 	/**

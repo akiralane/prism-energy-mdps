@@ -5,7 +5,7 @@ import prism.ModelType;
 public interface EMDP extends Model {
 
     @Override
-    default ModelType getModelType() { return ModelType.EDMP; }
+    default ModelType getModelType() { return ModelType.EMDP; }
 
     @Override
     default String infoString()
