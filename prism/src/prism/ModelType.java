@@ -108,12 +108,15 @@ public enum ModelType
 			return false;
 		}
 	},
-	EMDP("Energy Markov decision process") {
+	EMDP("energy Markov decision process") {
 		@Override
 		public boolean multiplePlayers()
 		{
 			return true;
 		}
+
+		@Override
+		public boolean choicesSumToOne() { return false; }
 	},
 	LTS("labelled transition system") {
 		@Override

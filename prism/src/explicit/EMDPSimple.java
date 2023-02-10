@@ -2,10 +2,13 @@ package explicit;
 
 import prism.PrismException;
 import prism.PrismLog;
+import prism.PrismPrintStreamLog;
 
 import java.util.BitSet;
 
 public class EMDPSimple extends EMDPExplicit implements ModelSimple {
+
+    protected PrismLog mainLog = new PrismPrintStreamLog(System.out);
 
     // TODO some sort of energy-distribution? where some maps *may* be labelled with energy costs
     //  analogous to the Distribution in the MDP implementation
@@ -14,14 +17,14 @@ public class EMDPSimple extends EMDPExplicit implements ModelSimple {
      * Constructor: empty EMDP.
      */
     public EMDPSimple() {
-        // TODO
+        initialise(0);
     }
 
     /**
      * Constructor: new EMDP with fixed number of states.
      */
     public EMDPSimple(int numStates) {
-        // TODO
+        initialise(numStates);
     }
 
     /**
@@ -29,7 +32,15 @@ public class EMDPSimple extends EMDPExplicit implements ModelSimple {
      * i.e. in which state index i becomes index permut[i].
      */
     public EMDPSimple(EMDPSimple emdp, int[] permut) {
-        // TODO
+        this(emdp.numStates);
+        copyFrom(emdp, permut);
+        // TODO - finish implementation
+    }
+
+    @Override
+    public void initialise(int numStates) {
+        super.initialise(numStates);
+        // TODO populate our transition function
     }
 
     @Override

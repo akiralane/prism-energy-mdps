@@ -59,9 +59,9 @@ public class ConstructModel extends PrismComponent
 	// Options:
 
 	/** Find deadlocks during model construction? */
-	protected boolean findDeadlocks = true;
+	protected boolean findDeadlocks = false;
 	/** Automatically fix deadlocks? */
-	protected boolean fixDeadlocks = true;
+	protected boolean fixDeadlocks = false;
 	/** Sort the reachable states before constructing the model? */
 	protected boolean sortStates = true;
 	/** Build a sparse representation, if possible?
