@@ -1,25 +1,17 @@
 package explicit;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Explicit representation of a transition in an EMDP. Since a transition
  * can either be a probabilistic or an energy transition, we keep track of
  * its 'type' here.
+ * This class is essentially a mapping from indices to pairs of (type, value),
+ * where each pair represents a transition.
  */
-public class TransitionList implements Iterable<Map.Entry<Integer, Double>>
+public class TransitionList implements Iterable<Map.Entry<Integer, Transition>>
 {
-    private enum TransitionType
-    {
-        Probabilistic,
-        Energy,
-    }
-
-    private final HashMap<Integer, Double> transitionMap;
-    private final HashMap<Integer, TransitionType> typeMap;
+    private final HashMap<Integer, Transition> transitionMap;
 
     /**
      * Constructor: Empty transition.
@@ -27,7 +19,18 @@ public class TransitionList implements Iterable<Map.Entry<Integer, Double>>
     public TransitionList()
     {
         transitionMap = new HashMap<>();
-        typeMap = new HashMap<>();
+    }
+
+    /**
+     * Construct a trans list from an existing one and an index permutation,
+     * i.e. in which index i becomes index permut[i].
+     */
+    public TransitionList(TransitionList trans, int permut[])
+    {
+        this();
+        for (Map.Entry<Integer, Transition> entry : trans) {
+            addTransition(permut[entry.getKey()], entry.getValue());
+        }
     }
 
     /**
@@ -36,8 +39,8 @@ public class TransitionList implements Iterable<Map.Entry<Integer, Double>>
      */
     public boolean addProbabilisticTransition(int index, double value)
     {
-        typeMap.put(index, TransitionType.Probabilistic);
-        return set(index, value);
+        var result = transitionMap.put(index, new Transition(Transition.TransitionType.Probabilistic, value));
+        return result != null;
     }
 
     /**
@@ -46,52 +49,29 @@ public class TransitionList implements Iterable<Map.Entry<Integer, Double>>
      */
     public boolean addEnergyTransition(int index, double value)
     {
-        typeMap.put(index, TransitionType.Energy);
-        return set(index, value);
-    }
-
-    /**
-     * Sets transition at {@code index} to {@code value}.
-     * @return True if there was already a value at {@code index}.
-     */
-    private boolean set(int index, double value)
-    {
-        var result = transitionMap.put(index, value);
+        var result = transitionMap.put(index, new Transition(Transition.TransitionType.Energy, value));
         return result != null;
     }
 
     /**
-     * Get the value of the transition at index {@code index}.
-     * @param index The index of the transition to get.
-     * @return The value of the transition, empty if undefined.
+     * Adds a given transition to the map.
+     * @return True if there was already a value at {@code index}.
      */
-    public Optional<Double> get(int index)
+    public boolean addTransition(int index, Transition transition)
     {
-        var value = transitionMap.get(index);
-        return value == null ? Optional.empty() : Optional.of(value);
+        var result = transitionMap.put(index, transition);
+        return result != null;
     }
 
     /**
-     * Get the type of the transition at index {@code index}.
+     * Get the transition at index {@code index}.
      * @param index The index of the transition to get.
-     * @return True if probabilistic, false if energy, empty if undefined.
+     * @return The transition, empty if undefined.
      */
-    public Optional<Boolean> isProbabilistic(int index)
+    public Optional<Transition> get(int index)
     {
-        var value = typeMap.get(index);
-        return value == null ?
-                Optional.empty() :
-                Optional.of(value == TransitionType.Probabilistic);
-    }
-
-    /**
-     * Get the type of the transition at index {@code index}.
-     * @param index The index of the transition to get.
-     * @return True if energy, false if probabilistic, empty if undefined.
-     */
-    public Optional<Boolean> isEnergy(int index)
-    {
-        return isProbabilistic(index).map(x -> !x);
+        var transition = transitionMap.get(index);
+        return transition == null ? Optional.empty() : Optional.of(transition);
     }
 
     public int size()
@@ -100,13 +80,13 @@ public class TransitionList implements Iterable<Map.Entry<Integer, Double>>
     }
 
     @Override
-    public Iterator<Map.Entry<Integer, Double>> iterator() {
+    public Iterator<Map.Entry<Integer, Transition>> iterator() {
         return transitionMap.entrySet().iterator();
     }
 
     @Override
     public String toString()
     {
-        return "Transitions: "+ transitionMap +" of types: "+ typeMap;
+        return transitionMap.toString();
     }
 }

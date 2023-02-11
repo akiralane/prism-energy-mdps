@@ -13,7 +13,7 @@ public class EMDPSimple extends EMDPExplicit implements ModelSimple {
 
     protected int numTransitions;
     protected List<Integer> initialStates;
-    protected List<TransitionList> transitionLists;
+    protected List<TransitionList> transitions;
 
     /**
      * Constructor: Empty EMDP.
@@ -38,6 +38,12 @@ public class EMDPSimple extends EMDPExplicit implements ModelSimple {
         super(emdp, permut);
         initialise(emdp.numStates);
         copyFrom(emdp, permut);
+        for (int i = 0; i < numStates; i++) {
+            transitions.set(
+                    permut[i],
+                    new TransitionList(emdp.transitions.get(i), permut));
+        }
+
         // TODO - finish implementation
     }
 
