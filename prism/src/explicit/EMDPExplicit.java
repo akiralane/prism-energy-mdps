@@ -74,6 +74,7 @@ public abstract class EMDPExplicit extends ModelExplicit implements EMDP {
 
     /**
      * Add a new (player {@code p}) state and return its index.
+     * !! Note that if you're calling this from outside an EMDP implementation, it won't actually add a real state !!
      * @param player The player who owns the new state (0-indexed).
      */
     public int addState(int player)
@@ -124,7 +125,7 @@ public abstract class EMDPExplicit extends ModelExplicit implements EMDP {
         this.playerNames = new HashMap<>();
         int numPlayers = playerNamesList.size();
         for (int i = 0; i < numPlayers; i++) {
-            this.playerNames.put(i + 1, playerNames.get(i));
+            this.playerNames.put(i + 1, playerNamesList.get(i));
         }
     }
 
@@ -145,5 +146,4 @@ public abstract class EMDPExplicit extends ModelExplicit implements EMDP {
         s += "Players:     " + playerNames + "\n";
         return s;
     }
-
 }

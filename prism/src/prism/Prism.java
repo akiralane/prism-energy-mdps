@@ -1658,6 +1658,7 @@ public class Prism extends PrismComponent implements PrismSettingsListener
 
 		// For some models, automatically switch engine
 		switch (currentModelType) {
+		case EMDP:
 		case CSG:
 		case SMG:
 		case STPG:

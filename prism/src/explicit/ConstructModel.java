@@ -240,6 +240,7 @@ public class ConstructModel extends PrismComponent
 				break;
 			case EMDP:
 				modelSimple = emdp = new EMDPSimple();
+				emdp.setPlayerInfo(playerNames);
 				break;
 			case MDP:
 				modelSimple = mdp = new MDPSimple();
