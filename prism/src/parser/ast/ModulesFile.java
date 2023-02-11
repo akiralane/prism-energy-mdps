@@ -1892,6 +1892,7 @@ public class ModulesFile extends ASTElement implements ModelInfo, RewardGenerato
 		ret.observableTypes = (observableTypes == null) ? null : new ArrayList<>(observableTypes);
 		ret.observableVars = (observableVars == null) ? null : new ArrayList<>(observableVars);
 		ret.constantValues = (constantValues == null) ? null : new Values(constantValues);
+		ret.environmentIndex = environmentIndex;
 		
 		return ret;
 	}

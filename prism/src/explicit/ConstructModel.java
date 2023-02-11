@@ -240,7 +240,7 @@ public class ConstructModel extends PrismComponent
 				break;
 			case EMDP:
 				modelSimple = emdp = new EMDPSimple();
-				emdp.setPlayerInfo(playerNames);
+				emdp.setPlayerInfo(playerNames, ((ModulesFileModelGenerator) modelGen).getEnvironmentPlayer());
 				break;
 			case MDP:
 				modelSimple = mdp = new MDPSimple();
@@ -359,7 +359,9 @@ public class ConstructModel extends PrismComponent
 							if (player == ((ModulesFileModelGenerator)modelGen).getEnvironmentPlayer())
 							{
 								emdp.addProbabilisticTransition(src, dest, modelGen.getTransitionProbability(i, j));
-							} else {
+							}
+							else
+							{
 								emdp.addEnergyTransition(src, dest, modelGen.getTransitionProbability(i, j)); // read probability as energy
 							}
 						case MDP:

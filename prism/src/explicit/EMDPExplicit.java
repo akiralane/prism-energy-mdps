@@ -8,6 +8,7 @@ public abstract class EMDPExplicit extends ModelExplicit implements EMDP {
 
     protected Map<Integer, String> playerNames;
     protected StateOwnersSimple stateOwners;
+    protected int environmentPlayer = -1;
 
     /**
      * Constructor: Empty EMDP.
@@ -39,6 +40,7 @@ public abstract class EMDPExplicit extends ModelExplicit implements EMDP {
     {
         this(emdp.numStates);
 
+        environmentPlayer = emdp.environmentPlayer;
         playerNames = emdp.playerNames;
         stateOwners = new StateOwnersSimple(emdp.numStates);
 
@@ -125,8 +127,19 @@ public abstract class EMDPExplicit extends ModelExplicit implements EMDP {
         this.playerNames = new HashMap<>();
         int numPlayers = playerNamesList.size();
         for (int i = 0; i < numPlayers; i++) {
-            this.playerNames.put(i + 1, playerNamesList.get(i));
+            this.playerNames.put(i, playerNamesList.get(i));
         }
+    }
+
+    /**
+     * Sets the info about players, additionally identifying an environment player.
+     * The extra information shouldn't be necessary for functionality (as yet) but allows
+     * for richer logging.
+     */
+    public void setPlayerInfo(List<String> playerNamesList, int environmentPlayer)
+    {
+        setPlayerInfo(playerNamesList);
+        this.environmentPlayer = environmentPlayer;
     }
 
     /**
@@ -143,7 +156,7 @@ public abstract class EMDPExplicit extends ModelExplicit implements EMDP {
         String s = "";
         s += "States:      " + getNumStates() + " (" + getNumInitialStates() + " initial)\n";
         s += "Transitions: " + getNumTransitions() + "\n";
-        s += "Players:     " + playerNames + "\n";
+        s += "Players:     " + playerNames + " with environment \""+playerNames.get(environmentPlayer)+"\" (player "+environmentPlayer+")\n";
         return s;
     }
 }
