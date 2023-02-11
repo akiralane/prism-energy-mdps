@@ -62,6 +62,16 @@ public abstract class EMDPExplicit extends ModelExplicit implements EMDP {
         stateOwners = new StateOwnersSimple(emdp.stateOwners);
     }
 
+
+    /**
+     * Adds a new player 1 state.
+     * @return The index of the added state.
+     */
+    public int addState()
+    {
+        return addState(1);
+    }
+
     /**
      * Add a new (player {@code p}) state and return its index.
      * @param player The player who owns the new state (0-indexed).
@@ -70,6 +80,17 @@ public abstract class EMDPExplicit extends ModelExplicit implements EMDP {
     {
         stateOwners.addState(player);
         return numStates - 1;
+    }
+
+    /**
+     * Add a number of new player-1 states.
+     * @param numToAdd _
+     */
+    public void addStates(int numToAdd)
+    {
+        for (int i = 0; i < numToAdd; i++) {
+            stateOwners.addState(1);
+        }
     }
 
     /**

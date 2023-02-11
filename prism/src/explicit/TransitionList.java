@@ -84,6 +84,11 @@ public class TransitionList implements Iterable<Map.Entry<Integer, Transition>>
         return transitionMap.entrySet().iterator();
     }
 
+    public Set<Integer> getSupport()
+    {
+        return transitionMap.keySet();
+    }
+
     @Override
     public String toString()
     {

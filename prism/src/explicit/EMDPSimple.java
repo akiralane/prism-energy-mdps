@@ -1,10 +1,13 @@
 package explicit;
 
+import prism.ModelType;
 import prism.PrismException;
 import prism.PrismLog;
 import prism.PrismPrintStreamLog;
 
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Iterator;
 import java.util.List;
 
 public class EMDPSimple extends EMDPExplicit implements ModelSimple {
@@ -44,35 +47,103 @@ public class EMDPSimple extends EMDPExplicit implements ModelSimple {
                     new TransitionList(emdp.transitions.get(i), permut));
         }
 
-        // TODO - finish implementation
+        numTransitions = emdp.getNumTransitions();
     }
 
     @Override
     public void initialise(int numStates) {
         super.initialise(numStates);
-        // TODO populate our transition function
+        transitions = new ArrayList<>(numStates);
+        for (int i = 0; i < numStates; i++) {
+            transitions.add(new TransitionList());
+        }
+    }
+
+    public void addProbabilisticTransition(int index, int target, double probability)
+    {
+        if (!transitions.get(index).addProbabilisticTransition(target, probability)) {
+            numTransitions++;
+        }
+    }
+
+    public void addEnergyTransition(int index, int target, double energy)
+    {
+        if (!transitions.get(index).addEnergyTransition(target, energy))
+        {
+            numTransitions++;
+        }
     }
 
     @Override
     public void clearState(int i) {
-        // TODO
+        throw new UnsupportedOperationException();
     }
 
+    /**
+     * Adds a new player 1 state.
+     * @return The index of the added state.
+     */
     @Override
     public int addState() {
-        // TODO
-        return 0;
+        super.addState();
+        addStates(1);
+        return numStates - 1;
+    }
+
+    /**
+     * Adds a number of player-1 states.
+     * @param numToAdd _
+     */
+    @Override
+    public void addStates(int numToAdd) {
+        super.addStates(numToAdd);
+        for (int i = 0; i < numToAdd; i++) {
+            transitions.add(new TransitionList());
+            numStates++;
+        }
     }
 
     @Override
-    public void addStates(int numToAdd) {
-        // TODO
+    public Iterator<Integer> getSuccessorsIterator(final int s)
+    {
+        return transitions.get(s).getSupport().iterator();
     }
 
     @Override
     public SuccessorsIterator getSuccessors(int s) {
-        // TODO
-        return null;
+        return SuccessorsIterator.from(getSuccessorsIterator(s), true);
+    }
+
+    /**
+     * @return The number of transitions in the model.
+     */
+    @Override
+    public int getNumTransitions() {
+        return numTransitions;
+    }
+
+    /**
+     * @param s The index of the state to check.
+     * @return The number of transitions from state {@code s}.
+     */
+    @Override
+    public int getNumTransitions(int s) {
+        return transitions.get(s).size();
+    }
+
+    /**
+     * @param s The index of the state to check.
+     * @return The transitions from state {@code s}.
+     */
+    public TransitionList getTransitions(int s)
+    {
+        return transitions.get(s);
+    }
+
+    @Override
+    public ModelType getModelType()
+    {
+        return ModelType.EMDP;
     }
 
     @Override
