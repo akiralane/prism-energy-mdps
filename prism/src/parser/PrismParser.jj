@@ -605,7 +605,7 @@ ModulesFile ModulesFile() throws PrismLangException :
 	// Player definition
 	player = Player() { mf.addPlayer(player); } |
 	// Environment definition
-	environment = Environment() { mf.setEnvironment(environment); }
+	environment = Environment() { mf.addEnvironmentPlayer(environment); }
 	)* <EOF>
 	{
 		// Check for multiple instances of some items

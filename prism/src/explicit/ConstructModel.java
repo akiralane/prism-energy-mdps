@@ -48,6 +48,7 @@ import prism.PrismNotSupportedException;
 import prism.PrismPrintStreamLog;
 import prism.ProgressDisplay;
 import prism.UndefinedConstants;
+import simulator.ModulesFileModelGenerator;
 
 /**
  * Class to perform explicit-state reachability and model construction.
@@ -286,22 +287,29 @@ public class ConstructModel extends PrismComponent
 		// Explore...
 		src = -1;
 		while (!explore.isEmpty()) {
+
 			// Pick next state to explore
 			// (they are stored in order found so know index is src+1)
 			state = explore.removeFirst();
 			src++;
+
 			// Explore all choices/transitions from this state
 			modelGen.exploreState(state);
 			nc = modelGen.getNumChoices();
+
 			// For turn-based games, first determine which player owns the state
+			player = -1; // error value!
 			if (modelType.multiplePlayers() && !modelType.concurrent()) {
 				player = modelGen.getPlayerOwningState();
 				if (modelType == ModelType.STPG) {
 					stpg.setPlayer(src, player);
 				} else if (modelType == ModelType.SMG) {
 					smg.setPlayer(src, player);
+				} else if (modelType == ModelType.EMDP) {
+					emdp.setPlayer(src, player);
 				}
 			}
+
 			// Look at each outgoing choice in turn
 			for (i = 0; i < nc; i++) {
 				// If required, check for duplicate actions here
@@ -313,10 +321,12 @@ public class ConstructModel extends PrismComponent
 						throw new PrismException(err);
 					}
 				}
+
 				// For nondet models, collect transitions in a Distribution
 				if (!justReach && modelType.nondeterministic()) {
 					distr = new Distribution();
 				}
+
 				// Look at each transition in the choice
 				nt = modelGen.getNumTransitions(i);
 				for (j = 0; j < nt; j++) {
@@ -330,8 +340,10 @@ public class ConstructModel extends PrismComponent
 							modelSimple.addState();
 						}
 					}
+
 					// Get index of state in state set
 					dest = states.getIndexOfLastAdd();
+
 					// Add transitions to model
 					if (!justReach) {
 						switch (modelType) {
@@ -342,7 +354,13 @@ public class ConstructModel extends PrismComponent
 							ctmc.addToProbability(src, dest, modelGen.getTransitionProbability(i, j));
 							break;
 						case EMDP:
-							// TODO add transition
+							// only module files are supported to construct EMDPs
+							if (player == ((ModulesFileModelGenerator)modelGen).getEnvironmentPlayer())
+							{
+								emdp.addProbabilisticTransition(src, dest, modelGen.getTransitionProbability(i, j));
+							} else {
+								emdp.addEnergyTransition(src, dest, modelGen.getTransitionProbability(i, j)); // read probability as energy
+							}
 						case MDP:
 						case POMDP:
 						case CTMDP:

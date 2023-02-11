@@ -245,6 +245,8 @@ public class ModulesFileModelGenerator implements ModelGenerator, RewardGenerato
 		return modulesFile.getPlayerNames();
 	}
 
+	public int getEnvironmentPlayer() { return modulesFile.getEnvironmentPlayer(); }
+
 	// Methods for ModelGenerator interface
 	
 	@Override

@@ -505,7 +505,7 @@ public class PrismParser implements PrismParserConstants {
           case ENVIRONMENT:
             // Environment definition
                     environment = Environment();
-                                      mf.setEnvironment(environment);
+                                      mf.addEnvironmentPlayer(environment);
             break;
           default:
             jj_la1[2] = jj_gen;
