@@ -222,6 +222,9 @@ public class StateModelChecker extends PrismComponent
 		case LTS:
 			mc = new NonProbModelChecker(parent);
 			break;
+		case EMDP:
+			mc = new EMDPModelChecker(parent);
+			break;
 		default:
 			throw new PrismException("Cannot create model checker for model type " + modelType);
 		}

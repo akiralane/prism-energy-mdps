@@ -364,6 +364,7 @@ public class ConstructModel extends PrismComponent
 							{
 								emdp.addEnergyTransition(src, dest, modelGen.getTransitionProbability(i, j)); // read probability as energy
 							}
+							break;
 						case MDP:
 						case POMDP:
 						case CTMDP:
