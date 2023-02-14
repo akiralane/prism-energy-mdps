@@ -153,8 +153,19 @@ public abstract class EMDPExplicit extends ModelExplicit implements EMDP {
     @Override
     public String infoStringTable()
     {
+        // Build rich(er) representation of states
+        StringBuilder statesListRep = new StringBuilder("[");
+        for (int i = 0; i < statesList.size(); i++) {
+            statesListRep
+                    .append(statesList.get(i))
+                    .append(initialStates.contains(i) ? "*" : "")
+                    .append(", ");
+        }
+        var len = statesListRep.length();
+        statesListRep.replace(len - 2, len, "]");
+
         String s = "";
-        s += "States:      " + getNumStates() + " (" + getNumInitialStates() + " initial)\n";
+        s += "States:      " + statesListRep + "\n";
         s += "Transitions: " + getNumTransitions() + "\n";
         s += "Players:     " + playerNames + " with environment \""+playerNames.get(environmentPlayer)+"\" (player "+environmentPlayer+")\n";
         return s;

@@ -15,7 +15,7 @@ public class EMDPSimple extends EMDPExplicit implements ModelSimple {
     protected PrismLog mainLog = new PrismPrintStreamLog(System.out);
 
     protected int numTransitions;
-    protected List<Integer> initialStates;
+//    protected List<Integer> initialStates;
     protected List<TransitionList> transitions;
 
     /**
@@ -61,7 +61,8 @@ public class EMDPSimple extends EMDPExplicit implements ModelSimple {
 
     public void addProbabilisticTransition(int index, int target, double probability)
     {
-        if (!transitions.get(index).addProbabilisticTransition(target, probability)) {
+        if (!transitions.get(index).addProbabilisticTransition(target, probability))
+        {
             numTransitions++;
         }
     }

@@ -92,6 +92,7 @@ public interface ASTVisitor
 	// ASTElement classes (misc.)
 	public Object visit(Filter e) throws PrismLangException;
 	public Object visit(ForLoop e) throws PrismLangException;
+	public Object visit(ExpressionEnergyReachability e) throws PrismLangException;
 
 }
 
