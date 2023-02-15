@@ -40,20 +40,7 @@ import explicit.rewards.Rewards;
 import explicit.rewards.SMGRewards;
 import explicit.rewards.STPGRewards;
 import parser.BooleanUtils;
-import parser.ast.Coalition;
-import parser.ast.Expression;
-import parser.ast.ExpressionFunc;
-import parser.ast.ExpressionLiteral;
-import parser.ast.ExpressionMultiNash;
-import parser.ast.ExpressionMultiNashProb;
-import parser.ast.ExpressionMultiNashReward;
-import parser.ast.ExpressionProb;
-import parser.ast.ExpressionQuant;
-import parser.ast.ExpressionReward;
-import parser.ast.ExpressionSS;
-import parser.ast.ExpressionStrategy;
-import parser.ast.ExpressionTemporal;
-import parser.ast.ExpressionUnaryOp;
+import parser.ast.*;
 import parser.type.TypeBool;
 import parser.type.TypeDouble;
 import parser.type.TypePathBool;
@@ -543,12 +530,27 @@ public class ProbModelChecker extends NonProbModelChecker
 		else if (expr instanceof ExpressionFunc) {
 			res = checkExpressionFunc(model, (ExpressionFunc) expr, statesOfInterest);
 		}
+		// Energy-reachability
+		else if (expr instanceof ExpressionEnergyReachability) {
+			res = checkExpressionEnergyReachability(model, (ExpressionEnergyReachability) expr, statesOfInterest);
+		}
 		// Otherwise, use the superclass
 		else {
 			res = super.checkExpression(model, expr, statesOfInterest);
 		}
 
 		return res;
+	}
+
+	protected StateValues checkExpressionEnergyReachability(Model model, ExpressionEnergyReachability expr, BitSet statesOfInterest) throws PrismException
+	{
+		// since EMDPs are the only one which need to use this, you should directly invoke a function in EMDPModelChecker
+		// reminder: model checking will probably look something like evaluating the expression for every state in the model,
+		// 			 using that to get the target states, then applying the algorithm.
+		//
+		// probably also want to look into how the checking outputs at the top level?
+		// i.e. how does what I'm doing here end up relating to the results for each proposition?
+		throw new PrismException("TODO: implement model checking!!");
 	}
 
 	/**

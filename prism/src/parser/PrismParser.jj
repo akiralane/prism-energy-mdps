@@ -440,6 +440,7 @@ TOKEN :
 |	< DOUBLE:			"double" >
 |	< DTMC:				"dtmc" >
 |	< E:				"E" >
+|   < EMIN:             "Emin" >
 |	< ENDINIT:			"endinit" >
 |	< ENDINVARIANT:		"endinvariant" >
 |	< ENDMODULE:		"endmodule" >
@@ -508,6 +509,8 @@ TOKEN :
 |	< TRUE:				"true" >
 |	< U:				"U" >
 |	< W:				"W" >
+|   < PGIVENE:          "P|E=" >
+|   < EGIVENP:          "Emin|P=" >
 	// Punctuation, etc.
 	// Note that "NOT" must be the first item of punctuation in this list
 	// (PrismSyntaxHighlighter relies on this fact)
@@ -1524,6 +1527,8 @@ Expression ExpressionBasic(boolean prop, boolean pathprop) :
 		// Remaining options are only applicable for properties
 		ret = ExpressionProb(prop, pathprop)
 	|
+	    ret = ExpressionEnergyReachability(prop, pathprop)
+	|
 		ret = ExpressionSS(prop, pathprop)
 	|
 		ret = ExpressionReward(prop, pathprop)
@@ -1721,6 +1726,27 @@ Expression ExpressionProb(boolean prop, boolean pathprop) :
 		}
 		else return ret;
 	}
+}
+
+Expression ExpressionEnergyReachability(boolean prop, boolean pathprop) :
+{
+    ExpressionEnergyReachability ret = null;
+    Token value;
+    ExpressionEnergyReachability.EnergyReachabilityType reachabilityType;
+    Token begin = null;
+    Expression expr = null;
+}
+{
+    { if (!prop) throw generateParseException(); }
+
+    ( begin = <PGIVENE> ( value = <REG_DOUBLE> ) { reachabilityType = ExpressionEnergyReachability.EnergyReachabilityType.PROB_GIVEN_ENERGY; }
+    | begin = <EGIVENP> ( value = <REG_DOUBLE> ) { reachabilityType = ExpressionEnergyReachability.EnergyReachabilityType.ENERGY_GIVEN_PROB; })
+    <LBRACKET> expr = Expression(false, false) <RBRACKET>
+    {
+        ret = new ExpressionEnergyReachability(expr, reachabilityType, Double.parseDouble(value.image));
+        ret.setPosition(begin, getToken(0));
+        return ret;
+    }
 }
 
 // Filter for a P/S/R operator
