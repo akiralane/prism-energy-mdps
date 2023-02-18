@@ -711,6 +711,7 @@ public class ASTTraverseModify implements ASTVisitor
 	public Object visit(ExpressionEnergyReachability e) throws PrismLangException
 	{
 		visitPre(e);
+		if (e.getExpression() != null) e.setExpression((Expression)(e.getExpression().accept(this)));
 		visitPost(e);
 		return e;
 	}

@@ -15,7 +15,6 @@ public class EMDPSimple extends EMDPExplicit implements ModelSimple {
     protected PrismLog mainLog = new PrismPrintStreamLog(System.out);
 
     protected int numTransitions;
-//    protected List<Integer> initialStates;
     protected List<TransitionList> transitions;
 
     /**

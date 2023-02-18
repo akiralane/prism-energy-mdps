@@ -18,7 +18,7 @@ public class ExpressionEnergyReachability extends Expression {
     }
 
     /** The main operand carried by this expression: i.e. "[s > 0]" in "Emin|P=0.3 [s > 0]" */
-    private final Expression expression;
+    private Expression expression;
     /** The type of energy-reachability expression this is. */
     private final EnergyReachabilityType reachabilityType;
     /** The probability of success if the type is ENERGY_GIVEN_PROB, or the initial energy if it's PROB_GIVEN_ENERGY */
@@ -53,6 +53,10 @@ public class ExpressionEnergyReachability extends Expression {
     public double getGivenValue() {
         return givenValue;
     }
+
+    public Expression getExpression() { return expression; }
+
+    public void setExpression(Expression newExpr) { expression = newExpr; }
 
     @Override
     public boolean isConstant() {

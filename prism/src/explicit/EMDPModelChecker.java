@@ -1,42 +1,65 @@
 package explicit;
 
-import explicit.rewards.Rewards;
+import parser.EvaluateContextState;
+import parser.State;
 import parser.ast.Expression;
-import prism.PrismComponent;
-import prism.PrismException;
-import prism.PrismNotSupportedException;
+import parser.ast.ExpressionEnergyReachability;
+import parser.type.*;
+import prism.*;
 
-import java.util.BitSet;
+import java.util.List;
 
-public class EMDPModelChecker extends ProbModelChecker {
-
+public class EMDPModelChecker extends StateModelChecker {
 
     /**
-     * Create a new ProbModelChecker, inherit basic state from parent (unless null).
+     * Constructor: new EMDP, inherit basic state from parent (unless null).
      * @param parent
      */
     public EMDPModelChecker(PrismComponent parent) throws PrismException {
         super(parent);
     }
 
-    /**
-     * Compute probabilities for an LTL path formula
-     */
-    @Override
-    protected StateValues checkProbPathFormulaLTL(Model model, Expression expr, boolean qual, MinMax minMax, BitSet statesOfInterest) throws PrismException
+    public Result check(Model model, Expression expr) throws PrismException
     {
-        // This probably isn't what I actually want...? I should extend the PRISM language first
-        throw new PrismNotSupportedException("Probability computation for EMDPs not implemented");
+        // verify and cast before passing to checking method
+        verifyTypes(model, expr);
+        var emdp = (EMDPSimple) model;
+        var energyReachabilityExpr = (ExpressionEnergyReachability) expr;
+
+        return checkEMDP(emdp, energyReachabilityExpr);
+    }
+
+    private Result checkEMDP(EMDPSimple model, ExpressionEnergyReachability expr) throws PrismException
+    {
+        // TODO implement actual algorithm
+        var testInitial = model.initialStates.get(0);
+        var testEc = new EvaluateContextState(model.statesList.get(testInitial));
+
+        var result = expr.evaluate(testEc);
+        System.out.println(result);
+
+        return null;
     }
 
     /**
-     * Compute rewards for a co-safe LTL reward operator.
+     * Check that the model and expression are the correct types, and typecheck the expression.
      */
-    @Override
-    protected StateValues checkRewardCoSafeLTL(Model model, Rewards modelRewards, Expression expr, MinMax minMax, BitSet statesOfInterest) throws PrismException
+    private void verifyTypes(Model model, Expression expr) throws PrismException
     {
-        // Reward structures are beyond this project's scope - this method should be safe to delete
-        throw new PrismException("Reward computation for EMDPs not implemented");
+        if (!(model instanceof EMDPSimple))
+            throw new PrismException("EMDPModelChecker only supports EMDPs, unsurprisingly");
+
+        if (!(expr instanceof ExpressionEnergyReachability energyReachabilityExpr))
+            throw new PrismException("Only energy reachability expressions are supported for EMDPs, got "+expr+" instead");
+
+        // TODO: type check energy reachability by type checking the *inner expression*
+        //  (look at how the other expressions do it - it can't just be passed a generic Expression to check)
+        //  so there needs to be a special case for EnergyReachability, but I'm not sure how to visitPost or whatever on the inner Expression
+
+//        energyReachabilityExpr.typeCheck();
+//        var exprType = energyReachabilityExpr.getType();
+//        if (!(exprType instanceof TypeBool))
+//            throw new PrismException("Energy reachability properties must be propositions");
     }
 
 }
