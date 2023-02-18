@@ -729,4 +729,9 @@ public class TypeCheck extends ASTTraverse
 			break;
 		}
 	}
+
+	public void visitPost(ExpressionEnergyReachability e) throws PrismLangException
+	{
+		e.setType(e.getExpression().getType());
+	}
 }

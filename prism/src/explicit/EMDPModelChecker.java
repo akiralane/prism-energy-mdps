@@ -42,24 +42,18 @@ public class EMDPModelChecker extends StateModelChecker {
     }
 
     /**
-     * Check that the model and expression are the correct types, and typecheck the expression.
+     * Check that the model and expression are the correct classes, and type-check the expression.
      */
     private void verifyTypes(Model model, Expression expr) throws PrismException
     {
         if (!(model instanceof EMDPSimple))
             throw new PrismException("EMDPModelChecker only supports EMDPs, unsurprisingly");
 
-        if (!(expr instanceof ExpressionEnergyReachability energyReachabilityExpr))
-            throw new PrismException("Only energy reachability expressions are supported for EMDPs, got "+expr+" instead");
+        if (!(expr instanceof ExpressionEnergyReachability))
+            throw new PrismException("Only energy reachability expressions are supported for EMDPs, got "+expr.getClass()+" instead");
 
-        // TODO: type check energy reachability by type checking the *inner expression*
-        //  (look at how the other expressions do it - it can't just be passed a generic Expression to check)
-        //  so there needs to be a special case for EnergyReachability, but I'm not sure how to visitPost or whatever on the inner Expression
-
-//        energyReachabilityExpr.typeCheck();
-//        var exprType = energyReachabilityExpr.getType();
-//        if (!(exprType instanceof TypeBool))
-//            throw new PrismException("Energy reachability properties must be propositions");
+        expr.typeCheck();
+        if (!(expr.getType() instanceof TypeBool))
+            throw new PrismException("Energy reachability properties must be propositions, but \""+((ExpressionEnergyReachability) expr).getExpression()+"\" is of type "+expr.getType());
     }
-
 }
