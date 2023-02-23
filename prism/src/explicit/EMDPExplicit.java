@@ -150,6 +150,8 @@ public abstract class EMDPExplicit extends ModelExplicit implements EMDP {
         return stateOwners.getPlayer(s);
     }
 
+    public int getEnvironmentPlayer() { return environmentPlayer; }
+
     @Override
     public String infoStringTable()
     {
