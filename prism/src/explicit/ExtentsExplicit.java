@@ -1,6 +1,7 @@
 package explicit;
 
 import parser.State;
+import prism.PrismException;
 
 import java.util.*;
 
@@ -33,54 +34,81 @@ public class ExtentsExplicit extends Extents implements IExtents {
     /**
      * Computes the result of merging the extents from the given state's successors (as described by
      * {@code merge} in the progress report). Requires the model for player and transition information.
-     * Note that this doesn't (shouldn't) mutate the object.
+     * Note that this doesn't (shouldn't) mutate the "extents" object.
+     * <p>
+     * <em>Player case:</em> for each key (energy value) in the successors:<ul>
+     *    <li>Get the list of probabilities in the successors associated with that key and pick the highest</li>
+     *    <li>If the highest value in list lower than highest value in the extent so far: omit key from computed extent</li>
+     *    <li>Otherwise: put (key, max(list)) in computed extent</li>
+     * </ul>
+     * </p>
      * @return The extent computed as a result of the merge.
      */
-    private TreeMap<Double, Double> mergeExtents(int stateIndex, EMDPSimple emdp) {
+    private TreeMap<Double, Double> mergeExtents(int stateIndex, EMDPSimple emdp) throws PrismException {
+
+        var resultExtent = new TreeMap<Double, Double>();
+        var transitions = emdp.getTransitions(stateIndex);
 
         if (emdp.getEnvironmentPlayer() == emdp.getPlayer(stateIndex)) { // probabilistic
             /*
             (look at your notebook! keep track of the "routes" somehow and use those)
+            whenever we encounter an entry, update the "routes" of the successor extents which participate
+            take the weighted sum of the values on the routes
             */
-        } else { // player's choice
 
-            var transitions = emdp.getTransitions(stateIndex);
+        } else { // controller's choice
+
             var energyValues = new TreeSet<Double>();
             var successorExtents = new HashSet<TreeMap<Double, Double>>();
 
-            // for every successor state, record its extent and add its keys (energy values) to the set
-            for (int i = 0; i < transitions.size(); i++) {
-                if (transitions.get(i).isPresent()) {
-                    successorExtents.add(extents.get(i));
-                    energyValues.addAll(extents.get(i).keySet());
+            // for every successor state, lift and store its extent, add its keys (energy values) to a set
+            for (Map.Entry<Integer, Transition> transition : transitions) {
+
+                var targetState = transition.getKey();
+                var cost = transition.getValue().value();
+
+                if (transition.getValue().type().equals(Transition.TransitionType.Probabilistic)) {
+                    throw new PrismException(
+                            "Found probabilistic transition \""+
+                            stateIndex+" --("+cost+")-> "+targetState+
+                            "\" from Controller state while merging extents!"
+                    );
                 }
+
+                // "lift" extent by the cost of the transition
+                var oldExtent = extents.get(targetState);
+                var liftedExtent = new TreeMap<Double, Double>();
+                for (Double energy : oldExtent.keySet()) {
+                    liftedExtent.put(energy + cost, oldExtent.get(energy));
+                }
+
+                successorExtents.add(liftedExtent);
+                energyValues.addAll(liftedExtent.keySet());
             }
 
-            // create the corresponding output entry for each energy value in the successors (some end up omitted)
+            // create the corresponding output entry for each energy value
+            double highestProbInExtent = 0.0;
             for (Double energy : energyValues) {
-                var successorProbabilities = new ArrayList<>();
 
-                // go through the successor extents and record its corresponding probability to this energy value
+                // find the highest probability in the successors associated with this energy
+                double highestProbForThisEnergy = 0.0;
                 for (TreeMap<Double, Double> extent : successorExtents) {
                     if (extent.containsKey(energy)) {
-                        successorProbabilities.add(extent.get(energy));
+                        highestProbForThisEnergy = Double.max(highestProbForThisEnergy, extent.get(energy));
                     }
                 }
 
-                // ...
+                // if it's higher than the current highest probability in the extent,
+                // update the new highest and put (energy, value) in the output
+                if (highestProbForThisEnergy > highestProbInExtent) {
+                    highestProbInExtent = highestProbForThisEnergy;
+                    resultExtent.put(energy, highestProbForThisEnergy);
+                }
+                // otherwise, don't include this energy value in the output, since it's redundant
             }
-
-            /*
-            (look at your notebook for better detail)
-            - for each key (energy value) in the successors:
-                - get the list of successor values associated with that key
-                - list empty: panic
-                - highest value in list lower than current running highest: omit key from computed extent
-                - otherwise: put (key, max(list)) in computed extent
-            */
         }
 
-        return null;
+        return resultExtent;
     }
 
     /**
