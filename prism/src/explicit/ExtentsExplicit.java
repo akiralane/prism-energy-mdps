@@ -10,7 +10,8 @@ import java.util.*;
  */
 public class ExtentsExplicit extends Extents implements IExtents {
 
-    private List<TreeMap<Double, Double>> extents;
+    /** Indexed by state. An extent is a TreeMap of energy -> probability of success. */
+    private final Map<Integer, TreeMap<Double, Double>> extents;
 
     /**
      * Constructor: initialises an extent for each state in the model.
@@ -18,15 +19,16 @@ public class ExtentsExplicit extends Extents implements IExtents {
     public ExtentsExplicit(EMDPExplicit emdp, List<State> targetStates) {
         super(emdp, targetStates);
 
-        extents = new ArrayList<>();
+        extents = new HashMap<>();
 
         for (State state : emdp.statesList) {
+            var stateIndex = emdp.statesList.indexOf(state);
             if (targetStates.contains(state)) {
                 // "with no energy, you can always reach a target state (this one)"
-                extents.add(new TreeMap<>(Map.of(0d, 1d)));
+                extents.put(stateIndex, new TreeMap<>(Map.of(0d, 1d)));
             } else {
                 // "with no energy, it is impossible to reach a target state (for now, before calculation)"
-                extents.add(new TreeMap<>(Map.of(0d, 0d)));
+                extents.put(stateIndex, new TreeMap<>(Map.of(0d, 0d)));
             }
         }
     }
@@ -56,22 +58,50 @@ public class ExtentsExplicit extends Extents implements IExtents {
             take the weighted sum of the values on the routes
             */
 
+            var energyValues = new TreeSet<Double>();
+            var successorExtents = new HashSet<TreeMap<Double, Double>>();
+            var routes = new HashMap<Integer, Double>();
+
+            // for each successor state, lift and store its extent, add its keys (energy values) to a set
+            for (Map.Entry<Integer, TransitionWeight> transition : transitions) {
+
+                var targetState = transition.getKey();
+                var probability = transition.getValue().value();
+
+                if (transition.getValue().type().equals(TransitionWeight.Type.Energy)) {
+                    throw new PrismException(
+                            "Found energy transition \""+
+                                    stateIndex+" --("+probability+")-> "+targetState+
+                                    "\" from Environment state while merging extents!"
+                    );
+                }
+
+                var targetExtent = extents.get(targetState);
+                successorExtents.add(targetExtent);
+                energyValues.addAll(targetExtent.keySet());
+
+                // TODO continue
+
+            }
+
         } else { // controller's choice
+
+            // TODO incorporate tracking states for strategies
 
             var energyValues = new TreeSet<Double>();
             var successorExtents = new HashSet<TreeMap<Double, Double>>();
 
-            // for every successor state, lift and store its extent, add its keys (energy values) to a set
-            for (Map.Entry<Integer, Transition> transition : transitions) {
+            // for each successor state, lift and store its extent, add its keys (energy values) to a set
+            for (Map.Entry<Integer, TransitionWeight> transition : transitions) {
 
                 var targetState = transition.getKey();
                 var cost = transition.getValue().value();
 
-                if (transition.getValue().type().equals(Transition.TransitionType.Probabilistic)) {
+                if (transition.getValue().type().equals(TransitionWeight.Type.Probabilistic)) {
                     throw new PrismException(
                             "Found probabilistic transition \""+
-                            stateIndex+" --("+cost+")-> "+targetState+
-                            "\" from Controller state while merging extents!"
+                                    stateIndex+" --("+cost+")-> "+targetState+
+                                    "\" from Controller state while merging extents!"
                     );
                 }
 
@@ -115,7 +145,7 @@ public class ExtentsExplicit extends Extents implements IExtents {
      * Sets the extent at the given index.
      */
     public void setExtent(int stateIndex, TreeMap<Double, Double> extent) {
-        extents.set(stateIndex, extent);
+        extents.put(stateIndex, extent);
     }
 
     /**

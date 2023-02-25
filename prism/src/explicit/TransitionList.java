@@ -9,9 +9,9 @@ import java.util.*;
  * This class is essentially a mapping from indices to pairs of (type, value),
  * where each pair represents a transition.
  */
-public class TransitionList implements Iterable<Map.Entry<Integer, Transition>>
+public class TransitionList implements Iterable<Map.Entry<Integer, TransitionWeight>>
 {
-    private final HashMap<Integer, Transition> transitionMap;
+    private final HashMap<Integer, TransitionWeight> transitionMap;
 
     /**
      * Constructor: Empty transition.
@@ -28,7 +28,7 @@ public class TransitionList implements Iterable<Map.Entry<Integer, Transition>>
     public TransitionList(TransitionList trans, int permut[])
     {
         this();
-        for (Map.Entry<Integer, Transition> entry : trans) {
+        for (Map.Entry<Integer, TransitionWeight> entry : trans) {
             addTransition(permut[entry.getKey()], entry.getValue());
         }
     }
@@ -39,8 +39,7 @@ public class TransitionList implements Iterable<Map.Entry<Integer, Transition>>
      */
     public boolean addProbabilisticTransition(int index, double value)
     {
-        var result = transitionMap.put(index, new Transition(Transition.TransitionType.Probabilistic, value));
-        return result != null;
+        return addTransition(index, new TransitionWeight(TransitionWeight.Type.Probabilistic, value));
     }
 
     /**
@@ -49,26 +48,27 @@ public class TransitionList implements Iterable<Map.Entry<Integer, Transition>>
      */
     public boolean addEnergyTransition(int index, double value)
     {
-        var result = transitionMap.put(index, new Transition(Transition.TransitionType.Energy, value));
-        return result != null;
+        return addTransition(index, new TransitionWeight(TransitionWeight.Type.Energy, value));
     }
 
     /**
      * Adds a given transition to the map.
+     * @param index The index of the target state.
+     * @param weight The weight of the transition.
      * @return True if there was already a value at {@code index}.
      */
-    public boolean addTransition(int index, Transition transition)
+    public boolean addTransition(int index, TransitionWeight weight)
     {
-        var result = transitionMap.put(index, transition);
+        var result = transitionMap.put(index, weight);
         return result != null;
     }
 
     /**
-     * Get the transition at index {@code index}.
+     * Get the transition value at index {@code index}.
      * @param index The index of the transition to get.
      * @return The transition, empty if undefined.
      */
-    public Optional<Transition> get(int index)
+    public Optional<TransitionWeight> get(int index)
     {
         var transition = transitionMap.get(index);
         return transition == null ? Optional.empty() : Optional.of(transition);
@@ -80,7 +80,7 @@ public class TransitionList implements Iterable<Map.Entry<Integer, Transition>>
     }
 
     @Override
-    public Iterator<Map.Entry<Integer, Transition>> iterator() {
+    public Iterator<Map.Entry<Integer, TransitionWeight>> iterator() {
         return transitionMap.entrySet().iterator();
     }
 
