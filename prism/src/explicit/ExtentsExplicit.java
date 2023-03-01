@@ -11,7 +11,7 @@ import java.util.*;
 public class ExtentsExplicit extends Extents implements IExtents {
 
     /** Indexed by state. An extent is a TreeMap of energy -> probability of success. */
-    private final Map<Integer, TreeMap<Double, Double>> extents;
+    private final Map<Integer, Extent> extents;
 
     /**
      * Constructor: initialises an extent for each state in the model.
@@ -25,10 +25,10 @@ public class ExtentsExplicit extends Extents implements IExtents {
             var stateIndex = emdp.statesList.indexOf(state);
             if (targetStates.contains(state)) {
                 // "with no energy, you can always reach a target state (this one)"
-                extents.put(stateIndex, new TreeMap<>(Map.of(0d, 1d)));
+                extents.put(stateIndex, new Extent(Extent.StateType.Target));
             } else {
                 // "with no energy, it is impossible to reach a target state (for now, before calculation)"
-                extents.put(stateIndex, new TreeMap<>(Map.of(0d, 0d)));
+                extents.put(stateIndex, new Extent(Extent.StateType.Intermediate));
             }
         }
     }
@@ -55,16 +55,19 @@ public class ExtentsExplicit extends Extents implements IExtents {
      * </p>
      * @return The extent computed as a result of the merge.
      */
-    private TreeMap<Double, Double> mergeExtents(int stateIndex, EMDPSimple emdp) throws PrismException {
+    private Extent mergeExtents(int stateIndex, EMDPSimple emdp) throws PrismException {
 
-        var resultExtent = new TreeMap<Double, Double>();
+        var resultExtent = extents.get(stateIndex);
+        if (resultExtent.getType().equals(Extent.StateType.Target)) { throw new PrismException("Tried to merge values for target state "+stateIndex+"!"); }
+        resultExtent.clear();
+
         var transitions = emdp.getTransitions(stateIndex);
 
         // --------------------- Environment-state merge ---------------------
         if (emdp.getEnvironmentPlayer() == emdp.getPlayer(stateIndex)) {
 
             var energyValues = new TreeSet<Double>();
-            var successorExtents = new HashSet<TreeMap<Double, Double>>();
+            var successorExtents = new HashSet<Extent>();
 
             // 1. for each successor state, weight and store its extent, add its keys (energy values) to a set
             for (Map.Entry<Integer, TransitionWeight> transition : transitions) {
@@ -80,18 +83,16 @@ public class ExtentsExplicit extends Extents implements IExtents {
                 }
 
                 // 1.1 weight extent by the probability of its transition
-                var oldExtent = extents.get(targetState);
-                var weightedExtent = new TreeMap<Double, Double>();
-                for (Map.Entry<Double, Double> entry : oldExtent.entrySet()) {
-                    var energy      = entry.getKey();
-                    var probability = entry.getValue();
-                    weightedExtent.put(
-                        energy,                      // original energy
-                        probability * weight.value() // weighted probability
+                var targetExtent = extents.get(targetState);
+                var weightedExtent = new Extent();
+                for (Double energy : targetExtent.getEnergySet()) {
+                    weightedExtent.set(
+                            energy,
+                            targetExtent.getProbabilityFor(energy) * weight.value()
                     );
                 }
                 successorExtents.add(weightedExtent);
-                energyValues.addAll(weightedExtent.keySet());
+                energyValues.addAll(weightedExtent.getEnergySet());
             }
 
             // 2. now create the corresponding output entry for each energy value
@@ -107,9 +108,9 @@ public class ExtentsExplicit extends Extents implements IExtents {
                     probValues.add(probability);
                 }
 
-                // 2.2 sum them
+                // 2.2 sum them and place them in the output
                 var weightedSum = probValues.stream().reduce(0.0, Double::sum);
-                resultExtent.put(energy, weightedSum);
+                resultExtent.set(energy, weightedSum);
             }
 
         // --------------------- Controller-state merge ---------------------
@@ -118,7 +119,7 @@ public class ExtentsExplicit extends Extents implements IExtents {
             // TODO incorporate tracking states for strategies
 
             var energyValues = new TreeSet<Double>();
-            var successorExtents = new HashSet<TreeMap<Double, Double>>();
+            var successorExtents = new HashMap<Integer, Extent>(); // source state -> extent
 
             // 1. for each successor state, lift and store its extent, add its keys (energy values) to a set
             for (Map.Entry<Integer, TransitionWeight> transition : transitions) {
@@ -134,18 +135,16 @@ public class ExtentsExplicit extends Extents implements IExtents {
                 }
 
                 // 1.1. "lift" extent by the cost of the transition
-                var oldExtent = extents.get(targetState);
-                var liftedExtent = new TreeMap<Double, Double>();
-                for (Map.Entry<Double, Double> entry : oldExtent.entrySet()) {
-                    var energy      = entry.getKey();
-                    var probability = entry.getValue();
-                    liftedExtent.put(
-                            energy + weight.value(), // lifted cost
-                            probability              // original probability
+                var targetExtent = extents.get(targetState);
+                var liftedExtent = new Extent();
+                for (Double energy : targetExtent.getEnergySet()) {
+                    liftedExtent.set(
+                            energy + weight.value(),
+                            targetExtent.getProbabilityFor(energy)
                     );
                 }
-                successorExtents.add(liftedExtent);
-                energyValues.addAll(liftedExtent.keySet());
+                successorExtents.put(targetState, liftedExtent);
+                energyValues.addAll(liftedExtent.getEnergySet());
             }
 
             // 2. now create the corresponding output entry for each energy value that we want
@@ -153,10 +152,17 @@ public class ExtentsExplicit extends Extents implements IExtents {
             for (Double energy : energyValues) {
 
                 // 2.1 find the highest probability in the successors associated with this energy
-                double highestProbForThisEnergy = 0.0;
-                for (TreeMap<Double, Double> extent : successorExtents) {
-                    if (extent.containsKey(energy)) {
-                        highestProbForThisEnergy = Double.max(highestProbForThisEnergy, extent.get(energy));
+                var highestProbForThisEnergy = 0.0;
+                var sourceOfHighestProb = 0;
+                for (Map.Entry<Integer, Extent> entry : successorExtents.entrySet()) {
+                    var sourceState = entry.getKey();
+                    var extent = entry.getValue();
+                    if (extent.hasEnergy(energy)) {
+                        var probability = extent.getProbabilityFor(energy);
+                        if (probability > highestProbForThisEnergy) { // set new highest if we find one
+                            highestProbForThisEnergy = probability;
+                            sourceOfHighestProb = sourceState;
+                        }
                     }
                 }
 
@@ -164,7 +170,8 @@ public class ExtentsExplicit extends Extents implements IExtents {
                 // update the new highest and put (energy, value) in the output
                 if (highestProbForThisEnergy > highestProbInExtent) {
                     highestProbInExtent = highestProbForThisEnergy;
-                    resultExtent.put(energy, highestProbForThisEnergy);
+                    resultExtent.set(energy, highestProbForThisEnergy);
+                    resultExtent.setSource(energy, sourceOfHighestProb);
                 }
                 // otherwise, don't bother including this energy value in the output, since it's redundant
             }
@@ -176,14 +183,14 @@ public class ExtentsExplicit extends Extents implements IExtents {
     /**
      * Sets the extent at the given index.
      */
-    public void setExtent(int stateIndex, TreeMap<Double, Double> extent) {
+    public void setExtent(int stateIndex, Extent extent) {
         extents.put(stateIndex, extent);
     }
 
     /**
      * @return The extent at the given index.
      */
-    public TreeMap<Double, Double> getExtent(int stateIndex) {
+    public Extent getExtent(int stateIndex) {
         return extents.get(stateIndex);
     }
 
