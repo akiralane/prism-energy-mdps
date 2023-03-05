@@ -15,7 +15,6 @@ public class EMDPModelChecker extends StateModelChecker {
 
     /**
      * Constructor: new EMDP model checker, inherit basic state from parent (unless null).
-     * @param parent
      */
     public EMDPModelChecker(PrismComponent parent) throws PrismException {
         super(parent);
@@ -50,9 +49,9 @@ public class EMDPModelChecker extends StateModelChecker {
         return new Result(); // TODO return an actual result
     }
 
-    private ExtentsExplicit computeExtents(EMDPSimple emdp, Set<Integer> targetStates)
+    private Extents computeExtents(EMDPSimple emdp, Set<Integer> targetStates)
     {
-        var extents = new ExtentsExplicit(emdp, targetStates);
+        var extents = new Extents(emdp, targetStates);
 
         mainLog.print("\nPutting states in order of proximity to target states...");
         var orderedStates = findIntermediateStatesInOrder(emdp, targetStates);
