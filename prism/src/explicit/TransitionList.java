@@ -3,11 +3,10 @@ package explicit;
 import java.util.*;
 
 /**
- * Explicit representation of a transition in an EMDP. Since a transition
- * can either be a probabilistic or an energy transition, we keep track of
- * its 'type' here.
- * This class is essentially a mapping from indices to pairs of (type, value),
- * where each pair represents a transition.
+ * Explicit representation of a list of transitions from a single state in an EMDP. Since a transition
+ * can either be a probabilistic or an energy transition, we keep track of its 'type' here.
+ * This class is essentially a mapping: successor state -> (weight type, weight value). Each entry represents
+ * one transition.
  */
 public class TransitionList implements Iterable<Map.Entry<Integer, TransitionWeight>>
 {
@@ -78,6 +77,8 @@ public class TransitionList implements Iterable<Map.Entry<Integer, TransitionWei
     {
         return transitionMap.size();
     }
+
+    public boolean containsState(int s) { return transitionMap.containsKey(s); }
 
     @Override
     public Iterator<Map.Entry<Integer, TransitionWeight>> iterator() {

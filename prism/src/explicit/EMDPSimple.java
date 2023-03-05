@@ -14,7 +14,7 @@ public class EMDPSimple extends EMDPExplicit implements ModelSimple {
 
     protected PrismLog mainLog = new PrismPrintStreamLog(System.out);
 
-    /** state index -> [(next state index, transition "value")] */
+    /** state index -> [(next state index, transition weight)] */
     protected List<TransitionList> transitions;
     protected int numTransitions;
 
@@ -31,6 +31,15 @@ public class EMDPSimple extends EMDPExplicit implements ModelSimple {
     public EMDPSimple(int numStates) {
         super(numStates);
         initialise(numStates);
+    }
+
+    /**
+     * Copy constructor: construct from existing EMDP.
+     */
+    public EMDPSimple(EMDPSimple emdp) {
+        super(emdp);
+        transitions = emdp.transitions;
+        numTransitions = emdp.numTransitions;
     }
 
     /**

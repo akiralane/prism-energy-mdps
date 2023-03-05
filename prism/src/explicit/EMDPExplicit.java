@@ -62,6 +62,7 @@ public abstract class EMDPExplicit extends ModelExplicit implements EMDP {
     {
         playerNames = new HashMap<>(emdp.playerNames);
         stateOwners = new StateOwnersSimple(emdp.stateOwners);
+        environmentPlayer = emdp.environmentPlayer;
     }
 
 

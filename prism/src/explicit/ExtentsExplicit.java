@@ -16,14 +16,13 @@ public class ExtentsExplicit extends Extents implements IExtents {
     /**
      * Constructor: initialises an extent for each state in the model.
      */
-    public ExtentsExplicit(EMDPExplicit emdp, List<State> targetStates) {
+    public ExtentsExplicit(EMDPExplicit emdp, Set<Integer> targetStates) {
         super(emdp, targetStates);
 
+        // create and populate extents
         extents = new HashMap<>();
-
-        for (State state : emdp.statesList) {
-            var stateIndex = emdp.statesList.indexOf(state);
-            if (targetStates.contains(state)) {
+        for (int stateIndex = 0; stateIndex < emdp.numStates; stateIndex++) {
+            if (targetStates.contains(stateIndex)) {
                 // "with no energy, you can always reach a target state (this one)"
                 extents.put(stateIndex, new Extent(Extent.StateType.Target));
             } else {
