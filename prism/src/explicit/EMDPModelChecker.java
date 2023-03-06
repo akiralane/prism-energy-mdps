@@ -56,8 +56,11 @@ public class EMDPModelChecker extends StateModelChecker {
         mainLog.print("\nPutting states in order of proximity to target states...");
         var orderedStates = findIntermediateStatesInOrder(emdp, targetStates);
 
+        mainLog.print("\n"+orderedStates);
+
         // TODO test extent merge algorithm
-        // TODO test ordered states algorithm
+        // TODO might it be worth leaving out initial states from the ordering - put them at the end specifically?
+        //  it's possible we could get a better result, but I'm not sure...
 
         return extents;
     }
@@ -72,29 +75,25 @@ public class EMDPModelChecker extends StateModelChecker {
     {
         var orderedStates = new ArrayList<Integer>();
 
-        // reverse all transitions in emdp
-        var reversedTransitions = new ArrayList<TransitionList>();
-        Set<Integer> oldEnergiesSet = IntStream.range(0, emdp.transitions.size()).boxed().collect(Collectors.toSet());
-        for (int oldEnergy : oldEnergiesSet) {
+        // reverse all transitions in EMDP
+        var originalTransitions = emdp.transitions;
+        var reversedTransitions = Arrays.asList(new TransitionList[originalTransitions.size()]);
+        reversedTransitions.replaceAll(ignored -> new TransitionList());
 
-            TransitionList oldEnergyList = emdp.transitions.get(oldEnergy);
+        for (int sourceState = 0; sourceState < originalTransitions.size(); sourceState++) {
 
-            for (Map.Entry<Integer, TransitionWeight> newEnergy : oldEnergyList) {
+            mainLog.print("\nstate "+sourceState);
 
-                var vertex = newEnergy.getKey();
-                var weight = newEnergy.getValue();
+            var transitionList = originalTransitions.get(sourceState);
 
-                TransitionList newEnergyList = reversedTransitions.get(newEnergy.getKey());
+            for (var transition : transitionList) {
+                var targetState = transition.getKey();
+                var weight = transition.getValue();
 
-                if (newEnergyList == null) {
-                    newEnergyList = new TransitionList();
-                    newEnergyList.addTransition(oldEnergy, weight);
-                } else if (!newEnergyList.containsState(oldEnergy)) {
-                    newEnergyList.addTransition(oldEnergy, weight);
-                }
-
-                reversedTransitions.set(vertex, newEnergyList);
+                mainLog.print("\nreversed transition: there is now "+targetState+" -> "+sourceState);
+                reversedTransitions.get(targetState).addTransition(sourceState, weight);
             }
+            mainLog.print("\nso revtrans looks like: "+reversedTransitions);
         }
 
         // initialise queue with target states
@@ -104,9 +103,10 @@ public class EMDPModelChecker extends StateModelChecker {
         while (!stateQueue.isEmpty()) {
 
             var thisState = stateQueue.remove();
-            var successors = emdp.getTransitions(thisState).getSupport();
+            var successors = reversedTransitions.get(thisState).getSupport();
 
-            orderedStates.add(thisState);
+            // add state but don't include target states, since their extents should never be updated
+            if (!targetStates.contains(thisState)) orderedStates.add(thisState);
 
             for (Integer successor : successors) {
                 if (!orderedStates.contains(successor)) {
@@ -115,8 +115,6 @@ public class EMDPModelChecker extends StateModelChecker {
             }
         }
 
-        // do not return target states, since their extents should never be updated
-        orderedStates.removeAll(targetStates);
         return orderedStates;
     }
 
