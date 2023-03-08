@@ -56,11 +56,12 @@ public class EMDPModelChecker extends StateModelChecker {
         mainLog.print("\nPutting states in order of proximity to target states...");
         var orderedStates = findIntermediateStatesInOrder(emdp, targetStates);
 
-
+        /*
+         * while (iteration condition)
+         *      go through the list and merge
+         */
 
         // TODO test extent merge algorithm
-        // TODO might it be worth leaving out initial states from the ordering - put them at the end specifically?
-        //  it's possible we could get a better result, but I'm not sure...
 
         return extents;
     }
@@ -101,8 +102,7 @@ public class EMDPModelChecker extends StateModelChecker {
             var thisState = stateQueue.remove();
             var successors = reversedTransitions.get(thisState).getSupport();
 
-            // add state but don't include target states, since their extents should never be updated
-            if (!targetStates.contains(thisState)) orderedStates.add(thisState);
+            orderedStates.add(thisState);
 
             for (Integer successor : successors) {
                 if (!orderedStates.contains(successor)) {
@@ -111,6 +111,8 @@ public class EMDPModelChecker extends StateModelChecker {
             }
         }
 
+        // don't include target states, since their extents should never be updated
+        orderedStates.removeAll(targetStates);
         return orderedStates;
     }
 
