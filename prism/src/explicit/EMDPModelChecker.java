@@ -33,35 +33,59 @@ public class EMDPModelChecker extends StateModelChecker {
     /**
      * Specific EMDP checking method, called after making sure we're using the right model.
      */
-    private Result checkEMDP(EMDPSimple model, ExpressionEnergyReachability expr) throws PrismException
+    private Result checkEMDP(EMDPSimple emdp, ExpressionEnergyReachability expr) throws PrismException
     {
-        var targetStates = findTargetStates(model, expr);
+        var targetStates = findTargetStates(emdp, expr);
         mainLog.print("\nFound "+targetStates.size()+" target states: "+targetStates);
 
-        mainLog.print("\nComputing extents...");
-        var extents = computeExtents(model, targetStates);
+        mainLog.print("\n\n[ Computing extents ]");
+        var extents = computeExtents(emdp, targetStates);
 
-        mainLog.print(switch (expr.getReachabilityType()) {
-            case ENERGY_GIVEN_PROB -> "\nComputing minimum energy required to reach a target state with probability "+expr.getGivenValue()+"...";
-            case PROB_GIVEN_ENERGY -> "\nComputing probability of reaching a target state with initial energy "+expr.getGivenValue()+"...";
-        });
+        mainLog.print("\n\n[ Computing result ]");
+        switch (expr.getReachabilityType()) {
+            case ENERGY_GIVEN_PROB ->
+            {
+                var targetProbability = expr.getGivenValue();
+                mainLog.print("\nFinding minimum energy required to reach a target state with probability "+targetProbability+"...");
+                var maybeResult = findEnergyGivenProb(emdp.getInitialStates(), extents, targetProbability);
+                if (maybeResult.isEmpty()) {
+                    throw new PrismException("No candidate energy found in the extents - try increasing the bound");
+                }
+                mainLog.print("\n"+maybeResult.get());
+            }
+            case PROB_GIVEN_ENERGY ->
+            {
+                var targetEnergy = expr.getGivenValue();
+                mainLog.print("\nFinding probability of reaching a target state with initial energy "+expr.getGivenValue()+"...");
+                var result = findProbGivenEnergy(emdp.getInitialStates(), extents, targetEnergy);
+                mainLog.print("\n"+result);
+            }
+        }
 
         return new Result(); // TODO return an actual result
     }
 
-    private Extents computeExtents(EMDPSimple emdp, Set<Integer> targetStates)
+    private Extents computeExtents(EMDPSimple emdp, Set<Integer> targetStates) throws PrismException
     {
         var extents = new Extents(emdp, targetStates);
 
         mainLog.print("\nPutting states in order of proximity to target states...");
         var orderedStates = findIntermediateStatesInOrder(emdp, targetStates);
 
-        /*
-         * while (iteration condition)
-         *      go through the list and merge
-         */
+        mainLog.print("\nPerforming value iteration...");
+        var environmentPlayer = emdp.getEnvironmentPlayer();
+        for (int i = 0; i < 100; i++) {
+            for (var state : orderedStates) {
+                if (emdp.getPlayer(state) == environmentPlayer) {
+                    extents.mergeEnvironment(state, emdp);
+                } else {
+                    extents.mergeController(state, emdp);
+                }
+            }
+        }
 
         // TODO test extent merge algorithm
+        // TODO halting condition
 
         return extents;
     }
@@ -130,6 +154,40 @@ public class EMDPModelChecker extends StateModelChecker {
             }
         }
         return targetStates;
+    }
+
+    /**
+     * For each initial state, finds the lowest energy required to succeed with the given probability.
+     * Empty if no such energy is found, implying we didn't reach it yet.
+     */
+    private Optional<Double> findEnergyGivenProb(Iterable<Integer> initialStates, Extents computedExtents, double probability)
+    {
+        var smallestEnergy = Double.MAX_VALUE;
+        boolean foundOne = false;
+
+        for (var state : initialStates)
+        {
+            var maybeEnergy = computedExtents.findMinEnergy(state, probability);
+            if (maybeEnergy.isPresent()) {
+                smallestEnergy = Double.min(maybeEnergy.get(), smallestEnergy);
+                foundOne = true;
+            }
+        }
+
+        return foundOne ? Optional.of(smallestEnergy) : Optional.empty();
+    }
+
+    /**
+     * For each initial state, finds the highest probability of success with the given energy.
+     */
+    private double findProbGivenEnergy(Iterable<Integer> initialStates, Extents computedExtents, double energy)
+    {
+        var largestProbability = 0.0;
+        for (var state : initialStates)
+        {
+            largestProbability = Double.max(computedExtents.getProbability(state, energy), largestProbability);
+        }
+        return largestProbability;
     }
 
     /**

@@ -199,11 +199,27 @@ public class Extents {
         return extents.get(stateIndex);
     }
 
-    public double getProbability(int stateIndex, double energy) {
-        throw new UnsupportedOperationException(); // TODO
+    /**
+     * @return The probability of success from the state at {@code stateIndex} with the given energy.
+     */
+    public double getProbability(int stateIndex, double energy)
+    {
+        var entry = extents.get(stateIndex).floorEntry(energy);
+        return entry == null ? 0 : entry.getValue();
     }
 
-    public double findMinEnergy(int stateIndex, double probability) {
-        throw new UnsupportedOperationException(); // TODO
+    /**
+     * @return The smallest amount of energy that guarantees the given probability of success.
+     * The optional is empty if there is no such probability in the extent, which means that
+     * we didn't search for long enough.
+     */
+    public Optional<Double> findMinEnergy(int stateIndex, double probability)
+    {
+        // "find the first energy whose probability is above the threshold"
+        return extents.get(stateIndex)
+                .entrySet().stream()
+                .dropWhile(entry -> entry.getValue() < probability)
+                .map(Map.Entry::getKey)
+                .findFirst();
     }
 }

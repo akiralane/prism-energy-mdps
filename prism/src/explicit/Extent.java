@@ -49,6 +49,9 @@ public class Extent {
 
     public void setSource(Double energy, Integer sourceState) { sourceMap.put(energy, sourceState); }
 
+    /** @return The index of the state which this energy-probability pair came from. */
+    public Integer getSource(Double energy) { return sourceMap.get(energy); }
+
     public Double getProbabilityFor(Double energy) { return extent.get(energy); }
 
     public boolean hasEnergy(Double energy) { return extent.containsKey(energy); }
@@ -56,6 +59,8 @@ public class Extent {
     public Map.Entry<Double, Double> floorEntry(Double energy) { return extent.floorEntry(energy); }
 
     public Set<Double> getEnergySet() { return extent.keySet(); }
+
+    public Set<Map.Entry<Double, Double>> entrySet() { return extent.entrySet(); }
 
     public StateType getType() { return type; }
 
