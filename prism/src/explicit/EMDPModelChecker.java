@@ -35,6 +35,7 @@ public class EMDPModelChecker extends StateModelChecker {
      */
     private Result checkEMDP(EMDPSimple emdp, ExpressionEnergyReachability expr) throws PrismException
     {
+        mainLog.print("\nEvaluating the expression on each state in the model...");
         var targetStates = findTargetStates(emdp, expr);
         mainLog.print("\nFound "+targetStates.size()+" target states: "+targetStates);
 
@@ -51,14 +52,14 @@ public class EMDPModelChecker extends StateModelChecker {
                 if (maybeResult.isEmpty()) {
                     throw new PrismException("No candidate energy found in the extents - try increasing the bound");
                 }
-                mainLog.print("\n"+maybeResult.get());
+                mainLog.print("\n===> "+maybeResult.get());
             }
             case PROB_GIVEN_ENERGY ->
             {
                 var targetEnergy = expr.getGivenValue();
                 mainLog.print("\nFinding probability of reaching a target state with initial energy "+expr.getGivenValue()+"...");
                 var result = findProbGivenEnergy(emdp.getInitialStates(), extents, targetEnergy);
-                mainLog.print("\n"+result);
+                mainLog.print("\n===> "+result);
             }
         }
 
@@ -69,12 +70,14 @@ public class EMDPModelChecker extends StateModelChecker {
     {
         var extents = new Extents(emdp, targetStates);
 
-        mainLog.print("\nPutting states in order of proximity to target states...");
+        mainLog.print("\nOrdering states by proximity to target states...");
         var orderedStates = findIntermediateStatesInOrder(emdp, targetStates);
 
         mainLog.print("\nPerforming value iteration...");
+        double timer = System.currentTimeMillis();
+        int counter = 0;
         var environmentPlayer = emdp.getEnvironmentPlayer();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 5; i++) {
             for (var state : orderedStates) {
                 if (emdp.getPlayer(state) == environmentPlayer) {
                     extents.mergeEnvironment(state, emdp);
@@ -82,9 +85,11 @@ public class EMDPModelChecker extends StateModelChecker {
                     extents.mergeController(state, emdp);
                 }
             }
+            counter++;
         }
+        mainLog.print(" done in "+counter+" iterations and "+((System.currentTimeMillis() - timer) / 1000)+" seconds.");
+        mainLog.print("\nResulting extents have an average of "+extents.getAverageEntries()+" entries.");
 
-        // TODO test extent merge algorithm
         // TODO halting condition
 
         return extents;

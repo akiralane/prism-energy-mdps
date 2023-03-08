@@ -66,5 +66,8 @@ public class Extent {
 
     public void clear() { extent.clear(); }
 
-
+    @Override
+    public String toString() {
+        return extent.toString();
+    }
 }

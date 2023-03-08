@@ -43,9 +43,8 @@ public class Extents {
      */
     public void mergeEnvironment(int stateIndex, EMDPSimple emdp) throws PrismException
     {
-        var resultExtent = extents.get(stateIndex);
+        var resultExtent = extents.get(stateIndex).deepCopy();
         if (resultExtent.getType().equals(Extent.StateType.Target)) { throw new PrismException("Tried to merge values for target state "+stateIndex+"!"); }
-        resultExtent.clear();
 
         if (emdp.getEnvironmentPlayer() != emdp.getPlayer(stateIndex)) {
             throw new PrismException("Tried to use environment merge on controller state (index "+stateIndex+")!");
@@ -186,13 +185,6 @@ public class Extents {
     }
 
     /**
-     * Sets the extent at the given index.
-     */
-    public void setExtent(int stateIndex, Extent extent) {
-        extents.put(stateIndex, extent);
-    }
-
-    /**
      * @return The extent at the given index.
      */
     public Extent getExtent(int stateIndex) {
@@ -221,5 +213,27 @@ public class Extents {
                 .dropWhile(entry -> entry.getValue() < probability)
                 .map(Map.Entry::getKey)
                 .findFirst();
+    }
+
+    public double getAverageEnergy() {
+        return extents.values().stream()
+                .map(Extent::getEnergySet)
+                .flatMap(Set::stream)
+                .mapToDouble(d -> d)
+                .average()
+                .orElse(Double.NaN);
+    }
+
+    public double getAverageEntries() {
+        return extents.values().stream()
+                .map(Extent::getEnergySet)
+                .mapToDouble(Set::size)
+                .average()
+                .orElse(Double.NaN);
+    }
+
+    @Override
+    public String toString() {
+        return extents.toString();
     }
 }
