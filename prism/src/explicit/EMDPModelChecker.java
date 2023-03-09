@@ -1,17 +1,16 @@
 package explicit;
 
 import parser.EvaluateContextState;
-import parser.State;
 import parser.ast.Expression;
 import parser.ast.ExpressionEnergyReachability;
 import parser.type.*;
 import prism.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class EMDPModelChecker extends StateModelChecker {
+
+    public final double DELTA_BOUND = 0; // TODO load from settings
 
     /**
      * Constructor: new EMDP model checker, inherit basic state from parent (unless null).
@@ -77,7 +76,8 @@ public class EMDPModelChecker extends StateModelChecker {
         double timer = System.currentTimeMillis();
         int counter = 0;
         var environmentPlayer = emdp.getEnvironmentPlayer();
-        for (int i = 0; i < 5; i++) {
+        do {
+            extents.clearDelta();
             for (var state : orderedStates) {
                 if (emdp.getPlayer(state) == environmentPlayer) {
                     extents.mergeEnvironment(state, emdp);
@@ -86,11 +86,10 @@ public class EMDPModelChecker extends StateModelChecker {
                 }
             }
             counter++;
-        }
+        } while (extents.getMaxDelta() > DELTA_BOUND);
+
         mainLog.print(" done in "+counter+" iterations and "+((System.currentTimeMillis() - timer) / 1000)+" seconds.");
         mainLog.print("\nResulting extents have an average of "+extents.getAverageEntries()+" entries.");
-
-        // TODO halting condition
 
         return extents;
     }

@@ -11,12 +11,14 @@ public class Extents {
 
     /** Indexed by state. An extent is a TreeMap of energy -> probability of success. */
     private final Map<Integer, Extent> extents;
+    /** The highest change in probability over every extent. */
+    private double maxDelta = 1.0;
 
     /**
      * Constructor: initialises an extent for each state in the model.
      */
-    public Extents(EMDPExplicit emdp, Set<Integer> targetStates) {
-
+    public Extents(EMDPExplicit emdp, Set<Integer> targetStates)
+    {
         // create and populate extents
         extents = new HashMap<>();
         for (int stateIndex = 0; stateIndex < emdp.numStates; stateIndex++) {
@@ -94,8 +96,13 @@ public class Extents {
             }
 
             // 2.2 sum them and place them in the output
+            var oldProbability = resultExtent.getProbabilityFor(energy); // used for delta
             var weightedSum = probValues.stream().reduce(0.0, Double::sum);
             resultExtent.set(energy, weightedSum);
+
+            // 2.3 compute delta for this energy
+            maxDelta = Double.max(weightedSum - oldProbability, maxDelta);
+
         }
 
         extents.put(stateIndex, resultExtent);
@@ -175,8 +182,12 @@ public class Extents {
             // update the new highest and put (energy, value) in the output
             if (highestProbForThisEnergy > highestProbInExtent) {
                 highestProbInExtent = highestProbForThisEnergy;
+                var oldProbabiity = resultExtent.getProbabilityFor(energy);
                 resultExtent.set(energy, highestProbForThisEnergy);
                 resultExtent.setSource(energy, sourceOfHighestProb);
+
+                // also update the delta if necessary
+                maxDelta = Double.max(oldProbabiity - highestProbForThisEnergy, maxDelta);
             }
             // otherwise, don't bother including this energy value in the output, since it's redundant
         }
@@ -231,6 +242,12 @@ public class Extents {
                 .average()
                 .orElse(Double.NaN);
     }
+
+    public void clearDelta() {
+        maxDelta = 0;
+    }
+
+    public double getMaxDelta() { return maxDelta; }
 
     @Override
     public String toString() {
