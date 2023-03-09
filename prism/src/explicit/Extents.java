@@ -11,7 +11,7 @@ public class Extents {
 
     /** Indexed by state. An extent is a TreeMap of energy -> probability of success. */
     private final Map<Integer, Extent> extents;
-    /** The highest change in probability over every extent. */
+    /** The largest change in probability over every extent, used to decide when to stop iteration. */
     private double maxDelta = 1.0;
 
     /**
@@ -182,12 +182,13 @@ public class Extents {
             // update the new highest and put (energy, value) in the output
             if (highestProbForThisEnergy > highestProbInExtent) {
                 highestProbInExtent = highestProbForThisEnergy;
-                var oldProbabiity = resultExtent.getProbabilityFor(energy);
+                var oldProbability = resultExtent.getProbabilityFor(energy);
                 resultExtent.set(energy, highestProbForThisEnergy);
                 resultExtent.setSource(energy, sourceOfHighestProb);
 
                 // also update the delta if necessary
-                maxDelta = Double.max(oldProbabiity - highestProbForThisEnergy, maxDelta);
+                if (oldProbability == null) oldProbability = resultExtent.floorEntry(energy).getValue();
+                maxDelta = Double.max(oldProbability - highestProbForThisEnergy, maxDelta);
             }
             // otherwise, don't bother including this energy value in the output, since it's redundant
         }

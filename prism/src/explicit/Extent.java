@@ -27,6 +27,7 @@ public class Extent {
             // "with no energy, it is impossible to reach a target state (for now, before calculation)"
             case Intermediate -> extent = new TreeMap<>(Map.of(0d, 0d));
         }
+        sourceMap = new TreeMap<>();
     }
 
     /**
@@ -37,11 +38,13 @@ public class Extent {
     public Extent() {
         type = StateType.Intermediate;
         extent = new TreeMap<>();
+        sourceMap = new TreeMap<>();
     }
 
     public Extent deepCopy() {
         var copy = new Extent(type);
         copy.extent = new TreeMap<>(extent);
+        copy.sourceMap = new TreeMap<>(sourceMap);
         return copy;
     }
 
