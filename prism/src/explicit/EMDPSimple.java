@@ -1,14 +1,9 @@
 package explicit;
 
-import prism.ModelType;
-import prism.PrismException;
-import prism.PrismLog;
-import prism.PrismPrintStreamLog;
+import explicit.graphviz.Decorator;
+import prism.*;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class EMDPSimple extends EMDPExplicit implements ModelSimple {
 
@@ -154,6 +149,84 @@ public class EMDPSimple extends EMDPExplicit implements ModelSimple {
     public ModelType getModelType()
     {
         return ModelType.EMDP;
+    }
+
+    @Override
+    public void exportToDotFile(PrismLog out, Iterable<explicit.graphviz.Decorator> decorators, int precision)
+    {
+        explicit.graphviz.Decoration defaults = new explicit.graphviz.Decoration();
+        defaults.attributes().put("shape", "circle");
+        defaults.attributes().put("fontname", "Helvetica");
+
+        // Header
+        out.print("digraph " + getModelType() + " {\nnode " + defaults.toString() + ";\n");
+        int i, numStates;
+        for (i = 0, numStates = getNumStates(); i < numStates; i++) {
+            // initialize
+            explicit.graphviz.Decoration d = new explicit.graphviz.Decoration(defaults);
+            d.setLabel(Integer.toString(i));
+            d.attributes().put("shape", environmentPlayer == getPlayer(i) ? "circle" : "diamond");
+            d.attributes().put("color", environmentPlayer == getPlayer(i) ? "black" : "red");
+            // run any decorators
+            if (decorators != null) {
+                for (Decorator decorator : decorators) {
+                    d = decorator.decorateState(i, d);
+                }
+            }
+
+            String decoration = d.toString();
+            out.println(i + " " + decoration + ";");
+
+            // Transitions for state i
+            if (initialStates.contains(i)) {
+                drawInitialTransitionTo(i, out);
+            }
+            exportTransitionsToDotFile(i, out, decorators, precision);
+        }
+
+        // Footer
+        out.print("}\n");
+    }
+
+    private void drawInitialTransitionTo(int i, PrismLog out) {
+
+        // state
+        explicit.graphviz.Decoration d = new explicit.graphviz.Decoration();
+        d.setLabel("");
+        d.attributes().put("shape", "point");
+        d.attributes().put("color", environmentPlayer == getPlayer(i) ? "black" : "red");
+        out.println("\""+i + "i\" " + d + ";");
+
+        // transition
+        out.print("\""+i + "i\" -> " + i);
+        explicit.graphviz.Decoration dInit = new explicit.graphviz.Decoration();
+        dInit.attributes().put("color", environmentPlayer == getPlayer(i) ? "black" : "red");
+        dInit.setLabel("");
+        out.println(" " + dInit + ";");
+    }
+
+    @Override
+    public void exportTransitionsToDotFile(int i, PrismLog out, Iterable<explicit.graphviz.Decorator> decorators, int precision)
+    {
+        // Iterate through outgoing transitions for this state
+        for (Map.Entry<Integer, TransitionWeight> e : transitions.get(i)) {
+            // Print a new dot file line for the arrow for this transition
+            out.print(i + " -> " + e.getKey());
+            // Annotate this arrow with the probability
+            explicit.graphviz.Decoration decoration = new explicit.graphviz.Decoration();
+            decoration.setLabel(PrismUtils.formatDouble(precision, e.getValue().value()));
+            decoration.attributes().put("color", e.getValue().type() == TransitionWeight.Type.Energy ? "red" : "black");
+            decoration.attributes().put("fontcolor", e.getValue().type() == TransitionWeight.Type.Energy ? "red" : "black");
+            decoration.attributes().put("fontname", "Helvetica");
+            // Apply any other decorators requested
+            if (decorators != null) {
+                for (Decorator decorator : decorators) {
+                    decoration = decorator.decorateProbability(i, e.getKey(), e.getValue(), decoration);
+                }
+            }
+            // Append to the dot file line for this transition
+            out.println(" " + decoration.toString() + ";");
+        }
     }
 
     @Override
