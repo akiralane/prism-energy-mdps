@@ -51,18 +51,18 @@ public class EMDPModelChecker extends StateModelChecker {
                 if (maybeResult.isEmpty()) {
                     throw new PrismException("No candidate energy found in the extents - try increasing the bound");
                 }
-                mainLog.print("\n===> "+maybeResult.get());
+                mainLog.print("\n===> "+maybeResult.get()+"\n");
             }
             case PROB_GIVEN_ENERGY ->
             {
                 var targetEnergy = expr.getGivenValue();
                 mainLog.print("\nFinding probability of reaching a target state with initial energy "+expr.getGivenValue()+"...");
                 var result = findProbGivenEnergy(emdp.getInitialStates(), extents, targetEnergy);
-                mainLog.print("\n===> "+result);
+                mainLog.print("\n===> "+result+"\n");
             }
         }
 
-        return new Result(); // TODO return an actual result
+        return new Result(); // TODO return an actual result, put extents in result so they can be looked at
     }
 
     private Extents computeExtents(EMDPSimple emdp, Set<Integer> targetStates) throws PrismException
@@ -72,7 +72,7 @@ public class EMDPModelChecker extends StateModelChecker {
         mainLog.print("\nOrdering states by proximity to target states...");
         var orderedStates = findIntermediateStatesInOrder(emdp, targetStates);
 
-        mainLog.print("\nPerforming value iteration...");
+        mainLog.print("\nPerforming value iteration with delta bound "+DELTA_BOUND+"...");
         double timer = System.currentTimeMillis();
         int counter = 0;
         var environmentPlayer = emdp.getEnvironmentPlayer();
@@ -87,6 +87,7 @@ public class EMDPModelChecker extends StateModelChecker {
             }
             counter++;
         } while (extents.getMaxDelta() > DELTA_BOUND);
+//        mainLog.print("\n"+extents+"\n");
 
         mainLog.print(" done in "+counter+" iterations and "+((System.currentTimeMillis() - timer) / 1000)+" seconds.");
         mainLog.print("\nResulting extents have an average of "+extents.getAverageEntries()+" entries.");

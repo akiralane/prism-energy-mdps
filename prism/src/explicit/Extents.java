@@ -96,11 +96,12 @@ public class Extents {
             }
 
             // 2.2 sum them and place them in the output
-            var oldProbability = resultExtent.getProbabilityFor(energy); // used for delta
+            var oldEntry = resultExtent.floorEntry(energy); // used for delta
             var weightedSum = probValues.stream().reduce(0.0, Double::sum);
             resultExtent.set(energy, weightedSum);
 
             // 2.3 compute delta for this energy
+            var oldProbability = oldEntry == null ? 0 : oldEntry.getValue();
             maxDelta = Double.max(weightedSum - oldProbability, maxDelta);
 
         }
@@ -182,12 +183,12 @@ public class Extents {
             // update the new highest and put (energy, value) in the output
             if (highestProbForThisEnergy > highestProbInExtent) {
                 highestProbInExtent = highestProbForThisEnergy;
-                var oldProbability = resultExtent.getProbabilityFor(energy);
+                var oldEntry = resultExtent.floorEntry(energy);
                 resultExtent.set(energy, highestProbForThisEnergy);
                 resultExtent.setSource(energy, sourceOfHighestProb);
 
                 // also update the delta if necessary
-                if (oldProbability == null) oldProbability = resultExtent.floorEntry(energy).getValue();
+                var oldProbability = oldEntry == null ? 0 : oldEntry.getValue();
                 maxDelta = Double.max(oldProbability - highestProbForThisEnergy, maxDelta);
             }
             // otherwise, don't bother including this energy value in the output, since it's redundant
