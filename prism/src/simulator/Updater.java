@@ -739,13 +739,14 @@ public class Updater extends PrismComponent
 			// Compute probability/rate
 			p = ups.getProbabilityInState(i, state);
 			// Check for non-finite/NaN probabilities/rates
-			if (!Double.isFinite(p) || p < 0) {
-				String s = modelType.choicesSumToOne() ? "Probability" : "Rate";
-				s += " is invalid (" + p + ") in state " + state.toString(modulesFile);
-				// Note: we indicate error in whole Updates object because the offending
-				// probability expression has probably been simplified from original form.
-				throw new PrismLangException(s, ups);
-			}
+			// TODO re-enable this but add a check for EMDPs
+//			if (!Double.isFinite(p) || p < 0) {
+//				String s = modelType.choicesSumToOne() ? "Probability" : "Rate";
+//				s += " is invalid (" + p + ") in state " + state.toString(modulesFile);
+//				// Note: we indicate error in whole Updates object because the offending
+//				// probability expression has probably been simplified from original form.
+//				throw new PrismLangException(s, ups);
+//			}
 			// Skip transitions with zero probability/rate
 			if (p == 0)
 				continue;

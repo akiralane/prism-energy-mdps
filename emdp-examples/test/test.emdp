@@ -1,0 +1,14 @@
+emdp
+
+global s : [0..10] init 0;
+
+player controller c endplayer
+environment env e endenvironment
+
+module e
+    [] s=0 -> 0.7:(s'=1) + 0.3:(s'=0);
+endmodule
+
+module c
+    [] s=1 -> 5:(s'=0);
+endmodule

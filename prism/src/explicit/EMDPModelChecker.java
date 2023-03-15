@@ -73,10 +73,13 @@ public class EMDPModelChecker extends StateModelChecker {
         var orderedStates = findIntermediateStatesInOrder(emdp, targetStates);
 
         mainLog.print("\nPerforming value iteration with delta bound "+DELTA_BOUND+"...");
+        mainLog.flush();
         double timer = System.currentTimeMillis();
         int counter = 0;
         var environmentPlayer = emdp.getEnvironmentPlayer();
         do {
+//            mainLog.print("\n\niteration: "+counter);
+//            mainLog.print("\ndelta: "+extents.getMaxDelta());
             extents.clearDelta();
             for (var state : orderedStates) {
                 if (emdp.getPlayer(state) == environmentPlayer) {

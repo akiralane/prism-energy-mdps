@@ -1,0 +1,22 @@
+digraph EMDP {
+node [label="",fontname="Helvetica",shape="circle"];
+0 [label="0\n(0)",color="red",shape="diamond"];
+"0i" [label="",color="red",shape="point"];
+"0i" -> 0 [label="",color="red"];
+0 -> 1 [label="1",color="red",fontcolor="red",fontname="Helvetica"];
+0 -> 2 [label="2",color="red",fontcolor="red",fontname="Helvetica"];
+0 -> 3 [label="3",color="red",fontcolor="red",fontname="Helvetica"];
+1 [label="1\n(1)",color="black"];
+1 -> 0 [label="0.8",color="black",fontcolor="black",fontname="Helvetica"];
+1 -> 4 [label="0.2",color="black",fontcolor="black",fontname="Helvetica"];
+2 [label="2\n(2)",color="black"];
+2 -> 1 [label="0.25",color="black",fontcolor="black",fontname="Helvetica"];
+2 -> 3 [label="0.25",color="black",fontcolor="black",fontname="Helvetica"];
+2 -> 5 [label="0.5",color="black",fontcolor="black",fontname="Helvetica"];
+3 [label="3\n(3)",color="black"];
+3 -> 0 [label="0.2",color="black",fontcolor="black",fontname="Helvetica"];
+3 -> 4 [label="0.8",color="black",fontcolor="black",fontname="Helvetica"];
+4 [label="4\n(4)",color="red",shape="diamond"];
+5 [label="5\n(5)",color="red",shape="diamond"];
+5 -> 0 [label="-100",color="green",fontcolor="green",fontname="Helvetica"];
+}

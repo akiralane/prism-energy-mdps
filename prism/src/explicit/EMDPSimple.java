@@ -214,9 +214,12 @@ public class EMDPSimple extends EMDPExplicit implements ModelSimple {
             out.print(i + " -> " + e.getKey());
             // Annotate this arrow with the probability
             explicit.graphviz.Decoration decoration = new explicit.graphviz.Decoration();
+            var colour = e.getValue().value() < 0 ? "green" :
+                    e.getValue().type() == TransitionWeight.Type.Energy ? "red" : "black";
+
             decoration.setLabel(PrismUtils.formatDouble(precision, e.getValue().value()));
-            decoration.attributes().put("color", e.getValue().type() == TransitionWeight.Type.Energy ? "red" : "black");
-            decoration.attributes().put("fontcolor", e.getValue().type() == TransitionWeight.Type.Energy ? "red" : "black");
+            decoration.attributes().put("color", colour);
+            decoration.attributes().put("fontcolor", colour);
             decoration.attributes().put("fontname", "Helvetica");
             // Apply any other decorators requested
             if (decorators != null) {

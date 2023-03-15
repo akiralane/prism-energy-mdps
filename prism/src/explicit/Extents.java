@@ -151,8 +151,18 @@ public class Extents {
             var targetExtent = extents.get(targetState);
             var liftedExtent = new Extent();
             for (Double energy : targetExtent.getEnergySet()) {
+                // Gains are negative, which can result in extents with negative energies.
+                // This doesn't make sense, since to go below zero energy is to lose -
+                // so if a weight would cause a negative energy, cap it at zero.
+                //
+                // Luckily, the Set of energies is backed by a TreeMap, so we're iterating
+                // through them in ascending order. This means that we'll always set
+                // the highest available probability as zero energy, even if multiple
+                // energies become zero (since lower values are overwritten by successive
+                // iterations and the probability strictly increases with energy).
+                var weightedEnergy = energy + weight.value();
                 liftedExtent.set(
-                        energy + weight.value(),
+                        weightedEnergy > 0 ? weightedEnergy : 0,
                         targetExtent.getProbabilityFor(energy)
                 );
             }
