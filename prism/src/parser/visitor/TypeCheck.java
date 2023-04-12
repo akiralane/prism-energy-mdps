@@ -732,6 +732,7 @@ public class TypeCheck extends ASTTraverse
 
 	public void visitPost(ExpressionEnergyReachability e) throws PrismLangException
 	{
-		e.setType(e.getExpression().getType());
+//		e.setType(e.getExpression().getType());
+		e.setType(TypeDouble.getInstance());
 	}
 }

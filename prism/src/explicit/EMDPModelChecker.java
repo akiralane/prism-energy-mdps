@@ -42,6 +42,7 @@ public class EMDPModelChecker extends StateModelChecker {
         var extents = computeExtents(emdp, targetStates);
 
         mainLog.print("\n\n[ Computing result ]");
+        double resultValue = Double.MAX_VALUE;
         switch (expr.getReachabilityType()) {
             case ENERGY_GIVEN_PROB ->
             {
@@ -51,18 +52,21 @@ public class EMDPModelChecker extends StateModelChecker {
                 if (maybeResult.isEmpty()) {
                     throw new PrismException("No candidate energy found in the extents - try increasing the bound");
                 }
-                mainLog.print("\n===> "+maybeResult.get()+"\n");
+                resultValue = maybeResult.get();
             }
             case PROB_GIVEN_ENERGY ->
             {
                 var targetEnergy = expr.getGivenValue();
                 mainLog.print("\nFinding probability of reaching a target state with initial energy "+expr.getGivenValue()+"...");
-                var result = findProbGivenEnergy(emdp.getInitialStates(), extents, targetEnergy);
-                mainLog.print("\n===> "+result+"\n");
+                resultValue = findProbGivenEnergy(emdp.getInitialStates(), extents, targetEnergy);
             }
         }
+        mainLog.print("\n===> "+resultValue+"\n");
 
-        return new Result(); // TODO return an actual result, put extents in result so they can be looked at
+        var result = new Result();
+        result.setResult(resultValue);
+//        result.setAccuracy(new Accuracy(Accuracy.AccuracyLevel.EXACT_FLOATING_POINT));
+        return result;
     }
 
     private Extents computeExtents(EMDPSimple emdp, Set<Integer> targetStates) throws PrismException
@@ -210,7 +214,5 @@ public class EMDPModelChecker extends StateModelChecker {
             throw new PrismException("Only energy reachability expressions are supported for EMDPs, got "+expr.getClass()+" instead");
 
         expr.typeCheck();
-        if (!(expr.getType() instanceof TypeBool))
-            throw new PrismException("Energy reachability properties must be propositions, but \""+((ExpressionEnergyReachability) expr).getExpression()+"\" is of type "+expr.getType());
     }
 }
