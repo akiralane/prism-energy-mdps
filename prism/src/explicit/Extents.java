@@ -261,6 +261,13 @@ public class Extents {
 
     public double getMaxDelta() { return maxDelta; }
 
+    public int size() { return extents.size(); }
+
+    public void clear() {
+        extents.clear();
+        clearDelta();
+    }
+
     @Override
     public String toString() {
         return extents.toString();

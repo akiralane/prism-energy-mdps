@@ -67,6 +67,8 @@ public class Extent {
 
     public StateType getType() { return type; }
 
+    public Map<Double, Integer> sourceMap() { return sourceMap; }
+
     public void clear() { extent.clear(); }
 
     @Override

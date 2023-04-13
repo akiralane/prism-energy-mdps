@@ -5,6 +5,8 @@ import parser.ast.Expression;
 import parser.ast.ExpressionEnergyReachability;
 import parser.type.*;
 import prism.*;
+import strat.EMDPStrategy;
+import strat.Strategy;
 
 import java.util.*;
 
@@ -65,7 +67,7 @@ public class EMDPModelChecker extends StateModelChecker {
 
         var result = new Result();
         result.setResult(resultValue);
-//        result.setAccuracy(new Accuracy(Accuracy.AccuracyLevel.EXACT_FLOATING_POINT));
+        result.setStrategy(new EMDPStrategy(emdp, extents));
         return result;
     }
 
@@ -82,8 +84,6 @@ public class EMDPModelChecker extends StateModelChecker {
         int counter = 0;
         var environmentPlayer = emdp.getEnvironmentPlayer();
         do {
-//            mainLog.print("\n\niteration: "+counter);
-//            mainLog.print("\ndelta: "+extents.getMaxDelta());
             extents.clearDelta();
             for (var state : orderedStates) {
                 if (emdp.getPlayer(state) == environmentPlayer) {
@@ -94,7 +94,6 @@ public class EMDPModelChecker extends StateModelChecker {
             }
             counter++;
         } while (extents.getMaxDelta() > DELTA_BOUND);
-//        mainLog.print("\n"+extents+"\n");
 
         mainLog.print(" done in "+counter+" iterations and "+((System.currentTimeMillis() - timer) / 1000)+" seconds.");
         mainLog.print("\nResulting extents have an average of "+extents.getAverageEntries()+" entries.");

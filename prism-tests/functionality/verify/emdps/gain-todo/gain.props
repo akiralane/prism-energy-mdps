@@ -1,0 +1,5 @@
+// RESULT: 1.0
+P|E=0.0    [s=1]
+
+// RESULT: 0.0
+Emin|P=1.0 [s=1]
