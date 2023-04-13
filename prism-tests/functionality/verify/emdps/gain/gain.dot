@@ -10,6 +10,5 @@ node [label="",fontname="Helvetica",shape="circle"];
 2 [label="2",color="red",shape="diamond"];
 2 -> 1 [label="4",color="red",fontcolor="red",fontname="Helvetica"];
 2 -> 2 [label="-1",color="green",fontcolor="green",fontname="Helvetica"];
-2 -> 3 [label="10",color="red",fontcolor="red",fontname="Helvetica"];
 3 [label="3",color="red",shape="diamond"];
 }
