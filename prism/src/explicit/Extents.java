@@ -103,7 +103,6 @@ public class Extents {
             // 2.3 compute delta for this energy
             var oldProbability = oldEntry == null ? 0 : oldEntry.getValue();
             maxDelta = Double.max(weightedSum - oldProbability, maxDelta);
-
         }
 
         extents.put(stateIndex, resultExtent);
@@ -122,9 +121,10 @@ public class Extents {
      */
     public void mergeController(int stateIndex, EMDPSimple emdp) throws PrismException
     {
-        var resultExtent = extents.get(stateIndex);
+        var previousStepExtent = extents.get(stateIndex).deepCopy();
+        var resultExtent = extents.get(stateIndex).deepCopy();
         if (resultExtent.getType().equals(Extent.StateType.Target)) { throw new PrismException("Tried to merge values for target state "+stateIndex+"!"); }
-        resultExtent.clear();
+        resultExtent.softClear();
 
         if (emdp.getEnvironmentPlayer() == emdp.getPlayer(stateIndex)) {
             throw new PrismException("Tried to use controller merge on environment state (index "+stateIndex+")!");
@@ -193,13 +193,13 @@ public class Extents {
             // update the new highest and put (energy, value) in the output
             if (highestProbForThisEnergy > highestProbInExtent) {
                 highestProbInExtent = highestProbForThisEnergy;
-                var oldEntry = resultExtent.floorEntry(energy);
                 resultExtent.set(energy, highestProbForThisEnergy);
                 resultExtent.setSource(energy, sourceOfHighestProb);
 
                 // also update the delta if necessary
+                var oldEntry = previousStepExtent.floorEntry(energy);
                 var oldProbability = oldEntry == null ? 0 : oldEntry.getValue();
-                maxDelta = Double.max(oldProbability - highestProbForThisEnergy, maxDelta);
+                maxDelta = Double.max(highestProbForThisEnergy - oldProbability, maxDelta);
             }
             // otherwise, don't bother including this energy value in the output, since it's redundant
         }

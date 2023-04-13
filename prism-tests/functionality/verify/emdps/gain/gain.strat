@@ -1,0 +1,20 @@
+State 0:
+    3 energy -> State 2
+    4 energy -> State 2
+    5 energy -> State 2
+    6 energy -> State 1
+State 1:
+    5 energy -> State 3
+State 2:
+    0 energy -> State 2
+    1 energy -> State 2
+    2 energy -> State 2
+    3 energy -> State 2
+    4 energy -> State 2
+    5 energy -> State 2
+    6 energy -> State 2
+    7 energy -> State 2
+    8 energy -> State 2
+    9 energy -> State 1
+State 3:
+    (empty)

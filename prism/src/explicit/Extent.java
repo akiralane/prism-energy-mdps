@@ -69,7 +69,15 @@ public class Extent {
 
     public Map<Double, Integer> sourceMap() { return sourceMap; }
 
-    public void clear() { extent.clear(); }
+    /**
+     * Clears the extent data, but *not* the source data. This means that
+     * extents can remain minimal while strategies can still see how the extents
+     * got their numbers.
+     */
+    public void softClear() {
+        extent.clear();
+//        sourceMap.clear();
+    }
 
     @Override
     public String toString() {
