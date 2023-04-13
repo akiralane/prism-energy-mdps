@@ -4,5 +4,5 @@ P|E=0.0    [s=3]
 // RESULT: 1.0
 P|E=3.0    [s=3]
 
-// RESULT: 1.0
+// RESULT: 3.0
 Emin|P=1.0 [s=3]
