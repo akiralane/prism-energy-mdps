@@ -1,0 +1,12 @@
+// RESULT: 1.0
+Emin|P=0.5  [s=3]
+// RESULT: 2.0
+Emin|P=0.75 [s=3]
+// RESULT: 0.96875
+P|E=5.0     [s=3]
+// RESULT: 0.0
+P|E=0.0     [s=3]
+// RESULT: 0.5
+P|E=1.0     [s=3]
+// RESULT: 0.875
+P|E=3.0     [s=3]
