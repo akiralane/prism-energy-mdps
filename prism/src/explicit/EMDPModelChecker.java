@@ -85,7 +85,9 @@ public class EMDPModelChecker extends StateModelChecker {
         var environmentPlayer = emdp.getEnvironmentPlayer();
         do {
             extents.clearDelta();
+//            System.out.println("----------");
             for (var state : orderedStates) {
+//                System.out.println(state+": "+extents.getExtent(state));
                 if (emdp.getPlayer(state) == environmentPlayer) {
                     extents.mergeEnvironment(state, emdp);
                 } else {

@@ -1,0 +1,15 @@
+emdp
+
+global s : [0..3] init 3;
+
+player s sys endplayer
+environment e env endenvironment
+
+module sys
+    [] s=1 -> 0:(s'=0);
+    [] s=3 -> 0:(s'=2) + 2:(s'=1);
+endmodule
+
+module env
+    [] s=2 -> 1.0:(s'=0);
+endmodule

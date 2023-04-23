@@ -1,0 +1,30 @@
+Iterations and times
+
+2x2:
+    2, 0.001s
+4x4:
+    2, 0.008s
+6x6:
+    2, 0.02s
+8x8:
+    2, 0.059s
+10x10:
+    2, 0.855s
+
+These all only take one pass to complete: the 2nd pass does nothing and just makes sure the delta is zero
+This is because there are no cycles in the graph - the precise values are carried back after one backwards pass.
+Using forwards calculation, the values are as follows:
+
+2x2:
+    1, 0.0s
+4x4:
+    7, 0.011
+6x6:
+    11, 0.034
+8x8:
+    15, 0.101
+10x10:
+    19, 2.268
+
+(compare these on the same graphs!)
+(one for size against time, one for size against iterations)

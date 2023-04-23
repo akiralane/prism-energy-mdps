@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import explicit.EMDP;
 import parser.State;
 import parser.VarList;
 import parser.ast.Command;
@@ -739,16 +740,15 @@ public class Updater extends PrismComponent
 			// Compute probability/rate
 			p = ups.getProbabilityInState(i, state);
 			// Check for non-finite/NaN probabilities/rates
-			// TODO re-enable this but add a check for EMDPs
-//			if (!Double.isFinite(p) || p < 0) {
-//				String s = modelType.choicesSumToOne() ? "Probability" : "Rate";
-//				s += " is invalid (" + p + ") in state " + state.toString(modulesFile);
-//				// Note: we indicate error in whole Updates object because the offending
-//				// probability expression has probably been simplified from original form.
-//				throw new PrismLangException(s, ups);
-//			}
+			if ((!Double.isFinite(p) || p < 0) && !(modelType == ModelType.EMDP)) {
+				String s = modelType.choicesSumToOne() ? "Probability" : "Rate";
+				s += " is invalid (" + p + ") in state " + state.toString(modulesFile);
+				// Note: we indicate error in whole Updates object because the offending
+				// probability expression has probably been simplified from original form.
+				throw new PrismLangException(s, ups);
+			}
 			// Skip transitions with zero probability/rate
-			if (p == 0)
+			if (p == 0 && !(modelType == ModelType.EMDP))
 				continue;
 			sum += p;
 			list = new ArrayList<Update>();
@@ -757,7 +757,7 @@ public class Updater extends PrismComponent
 		}
 		// For now, PRISM treats empty (all zero probs/rates) distributions as an error.
 		// Later, when errors in symbolic model construction are improved, this might be relaxed.
-		if (ch.size() == 0) {
+		if (ch.size() == 0 && !(modelType == ModelType.EMDP)) {
 			String msg = modelType.probabilityOrRate();
 			msg += (ups.getNumUpdates() > 1) ? " values sum to " : " is ";
 			msg += "zero for updates in state " + state.toString(modulesFile);
