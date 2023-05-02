@@ -6,10 +6,10 @@ player s sys endplayer
 environment e env endenvironment
 
 module sys
-    [] s=1 -> 2:(s'=0) + 5:(s'=3);
-    [] s=3 -> 2:(s'=2) + 3:(s'=3);
+    [] s=1 -> 1:(s'=0);
+    [] s=3 -> 1:(s'=2);
 endmodule
 
 module env
-    [] s=2 -> 0.799:(s'=1) + 0.201:(s'=3);
+    [] s=2 -> 1:(s'=1);
 endmodule

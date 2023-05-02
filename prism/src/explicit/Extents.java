@@ -172,11 +172,11 @@ public class Extents {
 
         // 2. now create the corresponding output entry for each energy value that we want
         double highestProbInExtent = 0.0;
+        var sourceOfHighestProb = 0;
         for (Double energy : energyValues) {
 
             // 2.1 find the highest probability in the successors associated with this energy
             var highestProbForThisEnergy = 0.0;
-            var sourceOfHighestProb = 0;
             for (Map.Entry<Integer, Extent> entry : successorExtents.entrySet()) {
                 var sourceState = entry.getKey();
                 var extent = entry.getValue();

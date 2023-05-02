@@ -1,6 +1,29 @@
+backward
+
 4:
-    24, 0.01
+    2, 0.001
 16:
+    226,0.167
+32:
+    78,0.085
+64:
+    788,6.511
+100:
+    872,13.519
 
+forward
 
-REMOVE ZERO - PRISM WAS PRUNING STATES WITH ENERGY ZERO BECAUSE IT THINKS THEY'RE INACCESSIBLE
+4:
+    4, 0.002
+16:
+    464,0.315
+32:
+    184,0.147
+64:
+    1636,13.666
+100:
+    1840,28.657
+
+the discrepancy around 32 is probably the point at which rounding errors become significant
+(blah blah potential solutions are discussed in the evaluation section (logarithms!))
+... yeah but is it

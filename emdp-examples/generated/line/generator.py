@@ -22,21 +22,29 @@ def generate_commands_line(length: int):
 
         if (state % 2) == 0: #environment
             chance = round(Decimal(random.uniform(0, 1)), 3)
-            command.append(
-                str(chance)+":(s'="+str(state-1)+")" + 
-                " + " +
-                str(1-chance)+":(s'="+str(min(state+2, length-1))+");"
-            )
+            if (state % 5) == 0:
+                command.append(
+                    str(chance)+":(s'="+str(state-1)+")" + 
+                    " + " +
+                    str(1-chance)+":(s'="+str(min(state+2, length-1))+");"
+                )
+            else:
+                command.append("1:(s'="+str(state-1)+");")
+            
             env_commands.append("".join(command))
         else:
             cost_l = random.randint(0,5)
             cost_r = random.randint(0,5)
 
-            command.append(
-                str(cost_l)+":(s'="+str(state-1)+")" + 
-                " + " +
-                str(cost_r)+":(s'="+str(min(state+2, length-1))+");"
-            )
+            if (state % 5) == 0:
+                command.append(
+                    str(cost_l)+":(s'="+str(state-1)+")" + 
+                    " + " +
+                    str(cost_r)+":(s'="+str(min(state+2, length-1))+");"
+                )
+            else:
+                command.append("1:(s'="+str(state-1)+");")
+            
             sys_commands.append("".join(command))
 
     return sys_commands, env_commands
@@ -59,12 +67,12 @@ def generate_line(length: int):
     sys, env = generate_commands_line(length)
     body(sys, env)
 
-generate_line(4)
-print("=========================")
-generate_line(16)
-print("=========================")
+# generate_line(4)
+# print("=========================")
+# generate_line(16)
+# print("=========================")
 generate_line(32)
-print("=========================")
-generate_line(64)
-print("=========================")
-generate_line(100)
+# print("=========================")
+# generate_line(64)
+# print("=========================")
+# generate_line(100)
