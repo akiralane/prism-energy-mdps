@@ -1,20 +1,41 @@
 emdp
 
-global s : [0..8] init 0;
+global pow : [0..3] init 0;
+// 0: low
+// 1: high
+// 2: off/charging
+// 3: failure
 
-player sys s endplayer
-environment env e endenvironment
+global com : [0..100] init 0;
 
-module s
-    [] s=0 -> 1:(s'=1) + 2:(s'=2);
-    [] s=1 -> 1:(s'=0) + 3:(s'=3);
-    [] s=4 -> 1:(s'=5) + 2:(s'=6);
-    [] s=5 -> 1:(s'=4) + 3:(s'=7);
+player client c endplayer
+environment server s endenvironment
+
+const int cost_lo = 2;
+const int cost_hi = 5;
+const int charge_rate = 1;
+
+const double p_poweroff_failure = 0.2;
+const double p_timeout_lo = 0.3;
+const double p_timeout_hi = 0.1;
+const double p_poweroff_success = 1 - p_poweroff_failure;
+const double p_msg_lo = 1 - p_timeout_lo;
+const double p_msg_hi = 1 - p_timeout_hi;
+
+module c
+    // power consumption state
+    [] pow=0 -> 0:(pow'=1) + -charge_rate:(pow'=2);
+    [] pow=1 -> 0:(pow'=0) + -charge_rate:(pow'=2);
+
+    // communication state
+    [] com=0 & pow=0 -> cost_lo:(com'=1);
+    [] com=0 & pow=1 -> cost_hi:(com'=1);
 endmodule
 
-module e
-    [] s=2 -> 0.25:(s'=4) + 0.75:(s'=0);
-    [] s=3 -> 0.4:(s'=5) + 0.6:(s'=1);
-    [] s=6 -> 0.25:(s'=8) + 0.75:(s'=0);
-    [] s=7 -> 0.4:(s'=8) + 0.6:(s'=1);
+module s
+    // power consumption state
+    [] pow=2 -> p_poweroff_success:(pow'=0) + p_poweroff_failure:(pow'=3);
+
+    // communication state
+    //[] com=1 & pow=0 -> p_timeout_lo:()
 endmodule

@@ -36,6 +36,13 @@ public class EMDPModelChecker extends StateModelChecker {
      */
     private Result checkEMDP(EMDPSimple emdp, ExpressionEnergyReachability expr) throws PrismException
     {
+        if (emdp.getInitialStates().size() > 1) {
+            mainLog.print("\n*******************************************");
+            mainLog.print("\nWARNING: Probability calculation for strategies currently only supports one initial state.");
+            mainLog.print("\nThe probabilities in the strategy output might show unexpected results!");
+            mainLog.print("\n*******************************************");
+        }
+
         mainLog.print("\nEvaluating the expression on each state in the model...");
         var targetStates = findTargetStates(emdp, expr);
         mainLog.print("\nFound "+targetStates.size()+" target states: "+targetStates);

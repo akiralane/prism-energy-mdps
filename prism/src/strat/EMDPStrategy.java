@@ -40,7 +40,7 @@ public class EMDPStrategy implements Strategy {
     @Override
     public void exportIndices(PrismLog out) throws PrismException {
         for (int i = 0; i < emdp.getNumStates(); i++) {
-            if (emdp.getPlayer(i) == emdp.getEnvironmentPlayer()) continue;
+            if (emdp.getPlayer(i) == emdp.getEnvironmentPlayer()) continue; // environment players do not have strategies
 
             out.println("State "+i+":");
             var sources = new TreeMap<>(extents.getExtent(i).sourceMap());
@@ -49,8 +49,13 @@ public class EMDPStrategy implements Strategy {
                 continue;
             }
 
+//            var initialState = emdp.getInitialStates().iterator().next(); // TODO support multiple initial states
             for (var pair : sources.entrySet()) {
-                out.println("    "+pair.getKey().intValue()+" energy -> State "+pair.getValue());
+                var energy = pair.getKey();
+                var target = pair.getValue();
+                var probSuccessHere = extents.getExtent(i).getProbabilityFor(energy);
+//                var probSuccessFromInitial = extents.getExtent(initialState).getProbabilityFor(energy);
+                out.println("    "+energy.intValue()+" energy -> State "+target+" ("+probSuccessHere+")");
             }
         }
     }

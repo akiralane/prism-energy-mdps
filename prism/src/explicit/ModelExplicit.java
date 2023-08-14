@@ -258,7 +258,7 @@ public abstract class ModelExplicit implements Model
 	}
 
 	@Override
-	public Iterable<Integer> getInitialStates()
+	public List<Integer> getInitialStates()
 	{
 		return initialStates;
 	}
