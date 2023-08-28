@@ -6,7 +6,14 @@ global pow : [0..3] init 0;
 // 2: off/charging
 // 3: failure
 
-global com : [0..100] init 0;
+global com : [0..6] init 0;
+// 0:    SYN ->
+// 1:        <- SYNACK (or timeout)
+// 2:    ACK ->
+// 3:        <- OK_START (or timeout)
+// 4: STREAM ->
+// 5:        <- CONFIRM_RECEIVE (or timeout)
+// 6: (success)
 
 player client c endplayer
 environment server s endenvironment
@@ -24,12 +31,18 @@ const double p_msg_hi = 1 - p_timeout_hi;
 
 module c
     // power consumption state
-    [] pow=0 -> 0:(pow'=1) + -charge_rate:(pow'=2);
-    [] pow=1 -> 0:(pow'=0) + -charge_rate:(pow'=2);
+    [] pow=0 & mod(com, 2)=0 -> 0:(pow'=1) + -charge_rate:(pow'=2);
+    [] pow=1 & mod(com, 2)=0 -> 0:(pow'=0) + -charge_rate:(pow'=2);
 
     // communication state
     [] com=0 & pow=0 -> cost_lo:(com'=1);
     [] com=0 & pow=1 -> cost_hi:(com'=1);
+
+    [] com=2 & pow=0 -> cost_lo:(com'=3);
+    [] com=2 & pow=1 -> cost_hi:(com'=3);
+
+    [] com=4 & pow=0 -> cost_lo:(com'=5);
+    [] com=4 & pow=1 -> cost_hi:(com'=5);
 endmodule
 
 module s
@@ -37,5 +50,12 @@ module s
     [] pow=2 -> p_poweroff_success:(pow'=0) + p_poweroff_failure:(pow'=3);
 
     // communication state
-    //[] com=1 & pow=0 -> p_timeout_lo:()
+    [] com=1 & pow=0 -> p_timeout_lo:(com'=0) + p_msg_lo:(com'=2);
+    [] com=1 & pow=1 -> p_timeout_hi:(com'=0) + p_msg_hi:(com'=2);
+
+    [] com=3 & pow=0 -> p_timeout_lo:(com'=0) + p_msg_lo:(com'=4);
+    [] com=3 & pow=1 -> p_timeout_hi:(com'=0) + p_msg_hi:(com'=4);
+
+    [] com=5 & pow=0 -> p_timeout_lo:(com'=0) + p_msg_lo:(com'=6);
+    [] com=5 & pow=1 -> p_timeout_hi:(com'=0) + p_msg_hi:(com'=6);
 endmodule
