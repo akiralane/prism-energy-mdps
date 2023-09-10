@@ -1,0 +1,108 @@
+emdp
+          
+global pow : [0..3] init 0;
+global com : [0..24] init 0; // target state 24
+
+player client c endplayer
+environment server s endenvironment
+
+const int cost_lo = 2;
+const int cost_hi = 5;
+const int charge_rate = 1;
+
+const double p_poweroff_failure = 0.2;
+const double p_timeout_lo = 0.3;
+const double p_timeout_hi = 0.1;
+const double p_poweroff_success = 1 - p_poweroff_failure;
+const double p_msg_lo = 1 - p_timeout_lo;
+const double p_msg_hi = 1 - p_timeout_hi;
+
+module c
+    // power consumption state
+    [] pow=0 & mod(com, 2)=0 -> 0:(pow'=1) + -charge_rate:(pow'=2);
+    [] pow=1 & mod(com, 2)=0 -> 0:(pow'=0) + -charge_rate:(pow'=2);
+
+    // communication state
+    [] com=0 & pow=0 -> cost_lo:(com'=1);
+    [] com=0 & pow=1 -> cost_hi:(com'=1);
+
+    [] com=2 & pow=0 -> cost_lo:(com'=3);
+    [] com=2 & pow=1 -> cost_hi:(com'=3);
+
+    [] com=4 & pow=0 -> cost_lo:(com'=5);
+    [] com=4 & pow=1 -> cost_hi:(com'=5);
+
+    [] com=6 & pow=0 -> cost_lo:(com'=7);
+    [] com=6 & pow=1 -> cost_hi:(com'=7);
+
+    [] com=8 & pow=0 -> cost_lo:(com'=9);
+    [] com=8 & pow=1 -> cost_hi:(com'=9);
+
+    [] com=10 & pow=0 -> cost_lo:(com'=11);
+    [] com=10 & pow=1 -> cost_hi:(com'=11);
+
+    [] com=12 & pow=0 -> cost_lo:(com'=13);
+    [] com=12 & pow=1 -> cost_hi:(com'=13);
+
+    [] com=14 & pow=0 -> cost_lo:(com'=15);
+    [] com=14 & pow=1 -> cost_hi:(com'=15);
+
+    [] com=16 & pow=0 -> cost_lo:(com'=17);
+    [] com=16 & pow=1 -> cost_hi:(com'=17);
+
+    [] com=18 & pow=0 -> cost_lo:(com'=19);
+    [] com=18 & pow=1 -> cost_hi:(com'=19);
+
+    [] com=20 & pow=0 -> cost_lo:(com'=21);
+    [] com=20 & pow=1 -> cost_hi:(com'=21);
+
+    [] com=22 & pow=0 -> cost_lo:(com'=23);
+    [] com=22 & pow=1 -> cost_hi:(com'=23);
+
+    [] com=24 & pow=0 -> cost_lo:(com'=25);
+    [] com=24 & pow=1 -> cost_hi:(com'=25);
+
+endmodule
+
+module s
+    // power consumption state
+    [] pow=2 -> p_poweroff_success:(pow'=0) + p_poweroff_failure:(pow'=3);
+    
+    // communication state
+    [] com=1 & pow=0 -> p_timeout_lo:(com'=0) + p_msg_lo:(com'=2);
+    [] com=1 & pow=1 -> p_timeout_hi:(com'=0) + p_msg_hi:(com'=2);
+
+    [] com=3 & pow=0 -> p_timeout_lo:(com'=0) + p_msg_lo:(com'=4);
+    [] com=3 & pow=1 -> p_timeout_hi:(com'=0) + p_msg_hi:(com'=4);
+
+    [] com=5 & pow=0 -> p_timeout_lo:(com'=0) + p_msg_lo:(com'=6);
+    [] com=5 & pow=1 -> p_timeout_hi:(com'=0) + p_msg_hi:(com'=6);
+
+    [] com=7 & pow=0 -> p_timeout_lo:(com'=0) + p_msg_lo:(com'=8);
+    [] com=7 & pow=1 -> p_timeout_hi:(com'=0) + p_msg_hi:(com'=8);
+
+    [] com=9 & pow=0 -> p_timeout_lo:(com'=0) + p_msg_lo:(com'=10);
+    [] com=9 & pow=1 -> p_timeout_hi:(com'=0) + p_msg_hi:(com'=10);
+
+    [] com=11 & pow=0 -> p_timeout_lo:(com'=0) + p_msg_lo:(com'=12);
+    [] com=11 & pow=1 -> p_timeout_hi:(com'=0) + p_msg_hi:(com'=12);
+
+    [] com=13 & pow=0 -> p_timeout_lo:(com'=0) + p_msg_lo:(com'=14);
+    [] com=13 & pow=1 -> p_timeout_hi:(com'=0) + p_msg_hi:(com'=14);
+
+    [] com=15 & pow=0 -> p_timeout_lo:(com'=0) + p_msg_lo:(com'=16);
+    [] com=15 & pow=1 -> p_timeout_hi:(com'=0) + p_msg_hi:(com'=16);
+
+    [] com=17 & pow=0 -> p_timeout_lo:(com'=0) + p_msg_lo:(com'=18);
+    [] com=17 & pow=1 -> p_timeout_hi:(com'=0) + p_msg_hi:(com'=18);
+
+    [] com=19 & pow=0 -> p_timeout_lo:(com'=0) + p_msg_lo:(com'=20);
+    [] com=19 & pow=1 -> p_timeout_hi:(com'=0) + p_msg_hi:(com'=20);
+
+    [] com=21 & pow=0 -> p_timeout_lo:(com'=0) + p_msg_lo:(com'=22);
+    [] com=21 & pow=1 -> p_timeout_hi:(com'=0) + p_msg_hi:(com'=22);
+
+    [] com=23 & pow=0 -> p_timeout_lo:(com'=0) + p_msg_lo:(com'=24);
+    [] com=23 & pow=1 -> p_timeout_hi:(com'=0) + p_msg_hi:(com'=24);
+
+endmodule

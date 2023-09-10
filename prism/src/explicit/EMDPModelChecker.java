@@ -9,6 +9,7 @@ import strat.EMDPStrategy;
 import strat.Strategy;
 
 import java.util.*;
+import java.util.concurrent.Callable;
 
 public class EMDPModelChecker extends StateModelChecker {
 
@@ -48,9 +49,13 @@ public class EMDPModelChecker extends StateModelChecker {
         mainLog.print("\nFound "+targetStates.size()+" target states: "+targetStates);
 
         mainLog.print("\n\n[ Computing extents ]");
+        Runtime runtime = Runtime.getRuntime();
+        var memoryBeforeExtents = getMemory(runtime);
         var extents = computeExtents(emdp, targetStates);
+        mainLog.print("\nUsed "+(memoryBeforeExtents-getMemory(runtime)+" MB."));
 
         mainLog.print("\n\n[ Computing result ]");
+        var memoryBeforeResult = getMemory(runtime);
         double resultValue = Double.MAX_VALUE;
         switch (expr.getReachabilityType()) {
             case ENERGY_GIVEN_PROB ->
@@ -71,7 +76,9 @@ public class EMDPModelChecker extends StateModelChecker {
             }
         }
         mainLog.print("\n===> "+resultValue+"\n");
+        mainLog.print("\nUsed "+(memoryBeforeResult-getMemory(runtime)+" MB."));
 
+        mainLog.print("\nTotal memory use: "+(memoryBeforeExtents-getMemory(runtime)));
         var result = new Result();
         result.setResult(resultValue);
         result.setStrategy(new EMDPStrategy(emdp, extents));
@@ -223,5 +230,10 @@ public class EMDPModelChecker extends StateModelChecker {
             throw new PrismException("Only energy reachability expressions are supported for EMDPs, got "+expr.getClass()+" instead");
 
         expr.typeCheck();
+    }
+
+    private double getMemory(Runtime runtime) {
+        // TODO: WIP - this doesn't seem accurate at the moment - am I using it wrong?
+        return runtime.totalMemory() - runtime.freeMemory() / (1024d * 1024d);
     }
 }
