@@ -1,15 +1,15 @@
 package explicit;
 
+import org.openjdk.jol.info.GraphLayout;
 import parser.EvaluateContextState;
 import parser.ast.Expression;
 import parser.ast.ExpressionEnergyReachability;
-import parser.type.*;
-import prism.*;
+import prism.PrismComponent;
+import prism.PrismException;
+import prism.Result;
 import strat.EMDPStrategy;
-import strat.Strategy;
 
 import java.util.*;
-import java.util.concurrent.Callable;
 
 public class EMDPModelChecker extends StateModelChecker {
 
@@ -37,7 +37,10 @@ public class EMDPModelChecker extends StateModelChecker {
      */
     private Result checkEMDP(EMDPSimple emdp, ExpressionEnergyReachability expr) throws PrismException
     {
-        if (emdp.getInitialStates().size() > 1) {
+        var initialStates = new ArrayList<Integer>();
+        emdp.getInitialStates().forEach(initialStates::add);
+
+        if (initialStates.size() > 1) {
             mainLog.print("\n*******************************************");
             mainLog.print("\nWARNING: Probability calculation for strategies currently only supports one initial state.");
             mainLog.print("\nThe probabilities in the strategy output might show unexpected results!");
@@ -50,35 +53,30 @@ public class EMDPModelChecker extends StateModelChecker {
 
         mainLog.print("\n\n[ Computing extents ]");
         Runtime runtime = Runtime.getRuntime();
-        var memoryBeforeExtents = getMemory(runtime);
+        var memoryBefore = getMemory(runtime);
         var extents = computeExtents(emdp, targetStates);
-        mainLog.print("\nUsed "+(memoryBeforeExtents-getMemory(runtime)+" MB."));
 
         mainLog.print("\n\n[ Computing result ]");
-        var memoryBeforeResult = getMemory(runtime);
         double resultValue = Double.MAX_VALUE;
         switch (expr.getReachabilityType()) {
-            case ENERGY_GIVEN_PROB ->
-            {
+            case ENERGY_GIVEN_PROB -> {
                 var targetProbability = expr.getGivenValue();
-                mainLog.print("\nFinding minimum energy required to reach a target state with probability "+targetProbability+"...");
+                mainLog.print("\nFinding minimum energy required to reach a target state with probability " + targetProbability + "...");
                 var maybeResult = findEnergyGivenProb(emdp.getInitialStates(), extents, targetProbability);
                 if (maybeResult.isEmpty()) {
                     throw new PrismException("No candidate energy found in the extents - try increasing the bound");
                 }
                 resultValue = maybeResult.get();
             }
-            case PROB_GIVEN_ENERGY ->
-            {
+            case PROB_GIVEN_ENERGY -> {
                 var targetEnergy = expr.getGivenValue();
-                mainLog.print("\nFinding probability of reaching a target state with initial energy "+expr.getGivenValue()+"...");
+                mainLog.print("\nFinding probability of reaching a target state with initial energy " + expr.getGivenValue() + "...");
                 resultValue = findProbGivenEnergy(emdp.getInitialStates(), extents, targetEnergy);
             }
         }
         mainLog.print("\n===> "+resultValue+"\n");
-        mainLog.print("\nUsed "+(memoryBeforeResult-getMemory(runtime)+" MB."));
+        mainLog.print("Total size of extents in MB: "+GraphLayout.parseInstance(extents).totalSize()/(1024d*1024d));
 
-        mainLog.print("\nTotal memory use: "+(memoryBeforeExtents-getMemory(runtime)));
         var result = new Result();
         result.setResult(resultValue);
         result.setStrategy(new EMDPStrategy(emdp, extents));
@@ -99,10 +97,7 @@ public class EMDPModelChecker extends StateModelChecker {
         var environmentPlayer = emdp.getEnvironmentPlayer();
         do {
             extents.clearDelta();
-//            System.out.println("----------");
             for (var state : orderedStates) {
-//                System.out.println(state+": "+extents.getExtent(state));
-//                System.out.println(extents.getMaxDelta());
                 if (emdp.getPlayer(state) == environmentPlayer) {
                     extents.mergeEnvironment(state, emdp);
                 } else {
@@ -233,7 +228,6 @@ public class EMDPModelChecker extends StateModelChecker {
     }
 
     private double getMemory(Runtime runtime) {
-        // TODO: WIP - this doesn't seem accurate at the moment - am I using it wrong?
-        return runtime.totalMemory() - runtime.freeMemory() / (1024d * 1024d);
+        return ((double)runtime.totalMemory() / (1024*1024)) - ((double)runtime.freeMemory() / (1024*1024));
     }
 }

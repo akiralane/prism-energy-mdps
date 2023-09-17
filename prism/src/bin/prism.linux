@@ -65,7 +65,8 @@ fi
 ARGS=( "$@" )
 for ((i=0;i<${#ARGS[@]};i+=1)); do
 	if [ "${ARGS[$i]}" = "-javaparams" -o "${ARGS[$i]}" = "--javaparams" ]; then
-		JAVA_PARAMS=${JAVA_PARAMS}${JAVA_PARAMS:+ }${ARGS[$i+1]}
+#		JAVA_PARAMS=${JAVA_PARAMS}${JAVA_PARAMS:+ }${ARGS[$i+1]}
+    JAVA_PARAMS="-Djdk.attach.allowAttachSelf"
 	fi
 done
 
@@ -111,6 +112,7 @@ if [ "$PRISM_NO_EXEC" = "yes" ]; then
 	"$PRISM_JAVA" $PRISM_JAVA_ARG1 $PRISM_JAVA_ARG2 $PRISM_JAVA_DEBUG $PRISM_JAVA_PARAMS $PRISM_JAVAMAXMEM $PRISM_JAVASTACKSIZE -Djava.awt.headless=$PRISM_HEADLESS -Djava.library.path="$JAVA_LIBRARY_PATH" -classpath "$PRISM_CLASSPATH" $PRISM_MAINCLASS "$@"
 else
 	# (Default) Run PRISM through Java via an exec call (the shell process is replaced by the Java process)
-	exec "$PRISM_JAVA" $PRISM_JAVA_ARG1 $PRISM_JAVA_ARG2 $PRISM_JAVA_DEBUG $PRISM_JAVA_PARAMS $PRISM_JAVAMAXMEM $PRISM_JAVASTACKSIZE -Djava.awt.headless=$PRISM_HEADLESS -Djava.library.path="$JAVA_LIBRARY_PATH" -classpath "$PRISM_CLASSPATH" $PRISM_MAINCLASS "$@"
+	# The two command-line arguments I've added allow the Java Object Layout instrumentation agent to run properly.
+	exec "$PRISM_JAVA" "-Djdk.attach.allowAttachSelf" "-Djol.tryWithSudo=true" $PRISM_JAVA_ARG1 $PRISM_JAVA_ARG2 $PRISM_JAVA_DEBUG $PRISM_JAVA_PARAMS $PRISM_JAVAMAXMEM $PRISM_JAVASTACKSIZE -Djava.awt.headless=$PRISM_HEADLESS -Djava.library.path="$JAVA_LIBRARY_PATH" -classpath "$PRISM_CLASSPATH" $PRISM_MAINCLASS "$@"
 fi
 
